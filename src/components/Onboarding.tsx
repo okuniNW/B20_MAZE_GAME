@@ -39,11 +39,8 @@ export default function Onboarding({ onStart, lang, theme = 'light', specialToke
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="relative flex items-center justify-center mb-8"
       >
-        <div className={`absolute w-36 h-36 rounded-full blur-2xl animate-pulse ${
-          isDark ? 'bg-[#0052FF]/30' : 'bg-amber-300/30'
-        }`}></div>
         {/* Core Base Brand Circle */}
-        <div className="w-28 h-28 bg-[#0052FF] rounded-full flex items-center justify-center border-4 border-white shadow-2xl relative z-10">
+        <div className="w-28 h-28 bg-[#0052FF] rounded-full flex items-center justify-center border-4 border-white shadow-lg relative z-10">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner relative">
             <div className="w-6 h-6 bg-[#0052FF] rounded-full flex items-center justify-center relative">
             </div>
@@ -58,7 +55,9 @@ export default function Onboarding({ onStart, lang, theme = 'light', specialToke
         transition={{ delay: 0.2, duration: 0.6 }}
         className="text-center mb-8"
       >
-        <h1 className="text-4xl md:text-5xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-[#0052FF] to-amber-500 tracking-tight">
+        <h1 className={`text-4xl md:text-5xl font-display font-black tracking-tight ${
+          isDark ? 'text-white' : 'text-[#0052FF]'
+        }`}>
           {translations[lang].header.title}
         </h1>
         <p className="text-xs font-mono text-[#0052FF] mt-2 tracking-widest uppercase font-bold">
