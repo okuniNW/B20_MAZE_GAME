@@ -98,6 +98,8 @@ export interface TranslationDictionary {
     time_short: string;
     throughput_short: string;
     earned_badges: string;
+    special_tokens_label: string;
+    insufficient_tokens: string;
   };
   badges: Record<string, { name: string; description: string }>;
 }
@@ -208,6 +210,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       time_short: "Time",
       throughput_short: "Throughput",
       earned_badges: "Achievements Earned",
+      special_tokens_label: "Special Keys",
+      insufficient_tokens: "You need 1 Special Key to use this!",
     },
     badges: {
       'speedster': { name: "Speedster", description: "Complete in < 15 seconds" },
@@ -325,6 +329,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       time_short: "Waktu",
       throughput_short: "Throughput",
       earned_badges: "Pencapaian Diperoleh",
+      special_tokens_label: "Token Khusus",
+      insufficient_tokens: "Butuh 1 Token Khusus untuk menggunakan ini!",
     },
     badges: {
       'speedster': { name: "Speedster", description: "Selesai dalam < 15 detik" },
@@ -442,6 +448,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       time_short: "时间",
       throughput_short: "吞吐量",
       earned_badges: "获得成就",
+      special_tokens_label: "特殊钥匙",
+      insufficient_tokens: "您需要 1 把特殊钥匙来使用此功能！",
     },
     badges: {
       'speedster': { name: "极速者", description: "15秒内通关" },
@@ -559,6 +567,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       time_short: "Temps",
       throughput_short: "Débit",
       earned_badges: "Badges Obtenus",
+      special_tokens_label: "Clés Spéciales",
+      insufficient_tokens: "Il vous faut 1 Clé Spéciale pour utiliser ceci !",
     },
     badges: {
       'speedster': { name: "Bolide", description: "Terminer en < 15 secondes" },

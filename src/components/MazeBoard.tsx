@@ -26,7 +26,9 @@ import {
   CheckCircle,
   TrendingUp,
   Sparkles,
-  Info
+  Info,
+  Key,
+  Lock
 } from 'lucide-react';
 import { Language, translations } from '../lib/i18n';
 
@@ -51,6 +53,8 @@ interface MazeBoardProps {
   onBackToMenu: () => void;
   lang: Language;
   theme?: 'light' | 'dark';
+  specialTokens: number;
+  setSpecialTokens: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function MazeBoard({
@@ -62,7 +66,9 @@ export default function MazeBoard({
   onGameCompleted,
   onBackToMenu,
   lang,
-  theme = 'dark'
+  theme = 'dark',
+  specialTokens,
+  setSpecialTokens
 }: MazeBoardProps) {
   // Determine grid size based on difficulty
   const getGridConfig = (diff: Difficulty, isCamp?: boolean, campLvl?: number) => {
@@ -108,6 +114,18 @@ export default function MazeBoard({
   const [blockHeight, setBlockHeight] = useState(18442000);
   const [autoSolving, setAutoSolving] = useState(false);
 
+   const [hintUnlocked, setHintUnlocked] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
   // Achievements States
   const [hasUsedBypass, setHasUsedBypass] = useState(false);
   const [hasEnabledHints, setHasEnabledHints] = useState(false);
@@ -136,6 +154,7 @@ export default function MazeBoard({
     sound.playReset();
     setAutoSolving(false);
     setShowHint(false);
+    setHintUnlocked(false);
     setHasWon(false);
     setHasUsedBypass(false);
     setHasEnabledHints(false);
@@ -283,6 +302,34 @@ export default function MazeBoard({
 
       initialGrid[portalB.y][portalB.x].isPortal = true;
       initialGrid[portalB.y][portalB.x].portalTarget = portalA;
+    }
+
+    // 4. Inject Special Tokens (Rarer spawn rate: 45% chance of level containing keys, max 1 on small, max 2 on large)
+    let keysPlaced = 0;
+    const maxKeys = cols <= 10 ? 1 : 2;
+    const hasKeysThisLevel = Math.random() < 0.45;
+
+    if (hasKeysThisLevel) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (keysPlaced >= maxKeys) break;
+          const cell = initialGrid[y][x];
+          // Don't place on start, exit, portals, gas nodes, or validator nodes
+          if (
+            (x === 0 && y === 0) ||
+            (x === cols - 1 && y === rows - 1) ||
+            cell.isGasNode ||
+            cell.isValidatorNode ||
+            cell.isPortal
+          ) {
+            continue;
+          }
+          if (Math.random() < 0.02) { // 2% chance per cell
+            cell.isSpecialToken = true;
+            keysPlaced++;
+          }
+        }
+      }
     }
 
     setGrid(initialGrid);
@@ -440,6 +487,12 @@ export default function MazeBoard({
         nextCell.isValidatorNode = false;
         collectedVal = 1;
         sound.playPowerup();
+      }
+
+      if (nextCell.isSpecialToken) {
+        nextCell.isSpecialToken = false;
+        sound.playPowerup();
+        setSpecialTokens(prev => prev + 1);
       }
 
       // Check Portal Teleportation
@@ -637,6 +690,11 @@ export default function MazeBoard({
             newGrid[y][x].isValidatorNode = false;
             sound.playPowerup();
           }
+          if (newGrid[y][x].isSpecialToken) {
+            newGrid[y][x].isSpecialToken = false;
+            sound.playPowerup();
+            setSpecialTokens(prev => prev + 1);
+          }
           return newGrid;
         });
 
@@ -646,6 +704,46 @@ export default function MazeBoard({
         triggerWin();
       }
     }, 120);
+  };
+
+  const handleHintClick = () => {
+    if (hintUnlocked) {
+      sound.playMove();
+      setShowHint(!showHint);
+    } else {
+      if (specialTokens >= 1) {
+        setSpecialTokens(prev => prev - 1);
+        setHintUnlocked(true);
+        setShowHint(true);
+        sound.playPowerup();
+        setHasEnabledHints(true);
+      } else {
+        sound.playError();
+        setToastMessage(translations[lang].mazeboard.insufficient_tokens);
+      }
+    }
+  };
+
+  const handleAutoSolveClick = () => {
+    if (autoSolving || hasWon) return;
+    if (specialTokens >= 1) {
+      setSpecialTokens(prev => prev - 1);
+      runAutoSolve();
+    } else {
+      sound.playError();
+      setToastMessage(translations[lang].mazeboard.insufficient_tokens);
+    }
+  };
+
+  const handleRegenClick = () => {
+    if (specialTokens >= 1) {
+      setSpecialTokens(prev => prev - 1);
+      setHintUnlocked(false);
+      generateMaze();
+    } else {
+      sound.playError();
+      setToastMessage(translations[lang].mazeboard.insufficient_tokens);
+    }
   };
 
   // Helper styles for cell walls
@@ -708,8 +806,10 @@ export default function MazeBoard({
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Hint Button */}
             <button
-              onClick={() => { sound.playMove(); setShowHint(!showHint); }}
+              type="button"
+              onClick={handleHintClick}
               className={`p-2 rounded-xl border text-xs font-display font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                 showHint
                   ? isDark 
@@ -717,31 +817,48 @@ export default function MazeBoard({
                     : 'bg-[#0052FF]/15 border-[#0052FF] text-[#0052FF]'
                   : isDark
                     ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm'
               }`}
               title={translations[lang].mazeboard.hint_tooltip}
             >
-              <Eye size={14} />
+              {hintUnlocked ? (
+                <Eye size={14} className="text-emerald-500" />
+              ) : (
+                <Lock size={12} className="text-amber-500" />
+              )}
               <span className="hidden sm:inline">{translations[lang].mazeboard.hint_btn}</span>
+              {!hintUnlocked && (
+                <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 px-1 py-0.5 rounded border border-amber-500/20">
+                  1 🔑
+                </span>
+              )}
             </button>
 
+            {/* Auto-Solve Button */}
             <button
-              onClick={runAutoSolve}
+              type="button"
+              onClick={handleAutoSolveClick}
               disabled={autoSolving || hasWon}
               className={`p-2 border rounded-xl text-xs font-display font-semibold flex items-center gap-1.5 disabled:opacity-50 transition cursor-pointer ${
                 isDark
                   ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-purple-500 hover:text-purple-300'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-purple-500 hover:text-purple-600'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-purple-500 hover:text-purple-600 shadow-sm'
               }`}
               title={translations[lang].mazeboard.autosolve_tooltip}
             >
-              <Sparkles size={14} />
+              <Sparkles size={14} className="text-purple-400" />
               <span className="hidden sm:inline">{translations[lang].mazeboard.autosolve_btn}</span>
+              <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 px-1 py-0.5 rounded border border-amber-500/20">
+                1 🔑
+              </span>
             </button>
 
+            {/* Regenerate Button */}
             <button
-              onClick={generateMaze}
-              className={`p-2 border rounded-xl text-xs transition cursor-pointer ${
+              type="button"
+              onClick={handleRegenClick}
+              disabled={autoSolving}
+              className={`p-2 border rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer ${
                 isDark
                   ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
                   : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 shadow-sm'
@@ -749,9 +866,27 @@ export default function MazeBoard({
               title={translations[lang].mazeboard.regen_tooltip}
             >
               <RotateCcw size={14} />
+              <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-500 px-1 py-0.5 rounded border border-amber-500/20">
+                1 🔑
+              </span>
             </button>
           </div>
         </div>
+
+        {/* Floating warning toast */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-2 rounded-xl text-xs font-display font-semibold mb-4 flex items-center gap-2 justify-center shadow-sm shadow-red-500/5 z-20"
+            >
+              <Lock size={12} className="animate-bounce text-red-500" />
+              <span>{toastMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* The Actual Maze Grid */}
         <div className={`relative w-full max-w-xl aspect-square rounded-2xl p-2 md:p-3 overflow-hidden shadow-2xl transition-all duration-300 border ${
@@ -837,6 +972,17 @@ export default function MazeBoard({
                           className="absolute inset-0 flex items-center justify-center z-10"
                         >
                           <ShieldCheck className="w-4 h-4 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                        </motion.div>
+                      )}
+
+                      {/* Render Special Key Collectible */}
+                      {cell.isSpecialToken && (
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1], rotate: [0, 15, -15, 0] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                          className="absolute inset-0 flex items-center justify-center z-10"
+                        >
+                          <Key className="w-4 h-4 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                         </motion.div>
                       )}
 
@@ -1199,6 +1345,42 @@ export default function MazeBoard({
             >
               {stats.isNoclipped ? translations[lang].mazeboard.bypass_active : translations[lang].mazeboard.bypass_use}
             </button>
+          </div>
+        </div>
+
+        {/* Special Keys Card */}
+        <div className={`p-5 rounded-2xl shadow-md backdrop-blur-sm border transition-all duration-300 ${
+          isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-md shadow-blue-500/5'
+        }`}>
+          <h3 className={`text-xs font-mono uppercase tracking-widest mb-3 flex items-center gap-1.5 ${
+            isDark ? 'text-slate-400' : 'text-slate-700 font-bold'
+          }`}>
+            <Key size={12} className="text-amber-500" />
+            {translations[lang].mazeboard.special_tokens_label}
+          </h3>
+
+          <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            {lang === 'id' 
+              ? 'Token Kunci Spesial muncul acak di labirin (peluang 10-20% per sel). Kumpulkan dan belanjakan kunci untuk membuka fitur pembantu!' 
+              : 'Special Key Tokens spawn randomly in the maze (10-20% chance per cell). Collect and spend keys to unlock helper features!'}
+          </p>
+
+          <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors duration-300 ${
+            isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-amber-50/40 border-amber-200'
+          }`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+              isDark 
+                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+                : 'bg-amber-100 text-amber-600 border-amber-300 shadow-sm'
+            }`}>
+              <Key size={20} className="animate-pulse" />
+            </div>
+            <div>
+              <span className="block text-[10px] font-mono text-slate-500 uppercase">{translations[lang].mazeboard.special_tokens_label}</span>
+              <span className={`text-base font-mono font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+                {specialTokens} 🔑
+              </span>
+            </div>
           </div>
         </div>
 

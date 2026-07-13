@@ -12,6 +12,7 @@ export interface Cell {
   visited: boolean;
   isGasNode?: boolean;       // Collectible: reduces transaction fee
   isValidatorNode?: boolean; // Collectible: reveals exit path or breaks wall
+  isSpecialToken?: boolean;  // Collectible: key token to unlock feature buttons
   isPortal?: boolean;        // Ethereum L1 -> Base L2 Bridge: teleportation node
   portalTarget?: { x: number; y: number };
 }

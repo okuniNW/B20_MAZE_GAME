@@ -18,7 +18,8 @@ import {
   ChevronDown,
   Sun,
   Moon,
-  Globe
+  Globe,
+  Key
 } from 'lucide-react';
 import { Difficulty, ScoreEntry } from './types';
 import Onboarding from './components/Onboarding';
@@ -47,6 +48,14 @@ export default function App() {
   const [unlockedLevel, setUnlockedLevel] = useState<number>(() => {
     return Number(localStorage.getItem('base_maze_unlocked_level') || '1');
   });
+
+  const [specialTokens, setSpecialTokens] = useState<number>(() => {
+    return Number(localStorage.getItem('base_maze_special_tokens') || '1');
+  });
+
+  useEffect(() => {
+    localStorage.setItem('base_maze_special_tokens', String(specialTokens));
+  }, [specialTokens]);
 
   // Auto-rotate news ticker updates
   useEffect(() => {
@@ -396,7 +405,7 @@ export default function App() {
               className="w-full flex flex-col items-center"
             >
               {/* Onboarding Widget with nested builder start form */}
-              <Onboarding onStart={handleStartGame} lang={lang} theme={theme} />
+              <Onboarding onStart={handleStartGame} lang={lang} theme={theme} specialTokens={specialTokens} />
 
               {/* LEVEL CONFIGURATION CARDS (Difficulty selector) */}
               <div className="w-full max-w-2xl px-4 mt-2">
@@ -597,6 +606,8 @@ export default function App() {
                 onBackToMenu={handleBackToMenu}
                 lang={lang}
                 theme={theme}
+                specialTokens={specialTokens}
+                setSpecialTokens={setSpecialTokens}
               />
             </motion.div>
           )}

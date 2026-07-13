@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Cpu, ShieldCheck, Zap, Coins, Globe } from 'lucide-react';
+import { ArrowRight, Cpu, ShieldCheck, Zap, Coins, Globe, Key } from 'lucide-react';
 import { sound } from './SoundEngine';
 import { Language, translations } from '../lib/i18n';
 
@@ -8,9 +8,10 @@ interface OnboardingProps {
   onStart: (playerName: string) => void;
   lang: Language;
   theme?: 'light' | 'dark';
+  specialTokens: number;
 }
 
-export default function Onboarding({ onStart, lang, theme = 'light' }: OnboardingProps) {
+export default function Onboarding({ onStart, lang, theme = 'light', specialTokens }: OnboardingProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
@@ -73,7 +74,7 @@ export default function Onboarding({ onStart, lang, theme = 'light' }: Onboardin
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.6 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-8"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8"
       >
         {/* Card 1: Gas Pump */}
         <div className={`p-5 rounded-xl flex flex-col items-center text-center border transition-all duration-300 ${
@@ -129,6 +130,33 @@ export default function Onboarding({ onStart, lang, theme = 'light' }: Onboardin
           <h3 className={`text-sm font-display font-semibold ${isDark ? 'text-slate-200' : 'text-slate-850 font-bold text-purple-700'}`}>{t.portal_title}</h3>
           <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600 font-medium'}`}>
             {t.portal_desc}
+          </p>
+        </div>
+
+        {/* Card 4: Special Key Tokens (User's Inventory) */}
+        <div className={`p-5 rounded-xl flex flex-col items-center text-center border transition-all duration-300 relative overflow-hidden ${
+          isDark 
+            ? 'bg-slate-900/50 border-amber-500/30' 
+            : 'bg-white border-amber-200 shadow-sm hover:border-amber-400 hover:shadow-md hover:shadow-amber-100/40'
+        }`}>
+          <div className="absolute top-2 right-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-md">
+            {lang === 'id' ? 'DIPUNYA' : 'OWNED'}
+          </div>
+
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 border ${
+            isDark 
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' 
+              : 'bg-amber-50 text-amber-600 border-amber-200 shadow-sm'
+          }`}>
+            <Key size={20} className="animate-pulse text-amber-500" />
+          </div>
+          <h3 className={`text-sm font-display font-semibold ${isDark ? 'text-slate-200' : 'text-slate-850 font-bold text-amber-600'}`}>
+            {lang === 'id' ? 'Kunci Khusus' : 'Special Keys'}
+          </h3>
+          <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            {lang === 'id' 
+              ? `Anda mengumpulkan ${specialTokens} Kunci Khusus. Simpan kunci ini untuk membuka bantuan!`
+              : `You have collected ${specialTokens} Special Keys. Spend them to unlock helper features inside the maze!`}
           </p>
         </div>
       </motion.div>
