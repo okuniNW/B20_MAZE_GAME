@@ -45,17 +45,7 @@ export default function Onboarding({ onStart, lang, theme = 'light' }: Onboardin
         <div className="w-28 h-28 bg-[#0052FF] rounded-full flex items-center justify-center border-4 border-white shadow-2xl relative z-10">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner relative">
             <div className="w-6 h-6 bg-[#0052FF] rounded-full flex items-center justify-center relative">
-              {/* Gold dot inside on light theme */}
-              {!isDark && (
-                <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping"></div>
-              )}
             </div>
-            {/* Elegant Golden Star Badge Accent */}
-            {!isDark && (
-              <div className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-md animate-bounce">
-                <span className="text-[10px] select-none">✨</span>
-              </div>
-            )}
           </div>
         </div>
       </motion.div>
@@ -70,9 +60,8 @@ export default function Onboarding({ onStart, lang, theme = 'light' }: Onboardin
         <h1 className="text-4xl md:text-5xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-[#0052FF] to-amber-500 tracking-tight">
           {translations[lang].header.title}
         </h1>
-        <p className="text-xs font-mono text-[#0052FF] mt-2 tracking-widest uppercase font-bold flex items-center justify-center gap-1.5">
-          <span>{t.subtitle}</span>
-          {!isDark && <span className="text-amber-500 font-bold">• LIGHT MODE</span>}
+        <p className="text-xs font-mono text-[#0052FF] mt-2 tracking-widest uppercase font-bold">
+          {t.subtitle}
         </p>
         <p className={`mt-4 text-sm max-w-md mx-auto leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
           {t.description}

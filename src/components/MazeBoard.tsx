@@ -44,6 +44,9 @@ interface Particle {
 interface MazeBoardProps {
   playerName: string;
   difficulty: Difficulty;
+  isCampaign?: boolean;
+  campaignLevel?: number;
+  onLevelCompleted?: (nextLvl: number) => void;
   onGameCompleted: (score: ScoreEntry) => void;
   onBackToMenu: () => void;
   lang: Language;
@@ -53,13 +56,26 @@ interface MazeBoardProps {
 export default function MazeBoard({
   playerName,
   difficulty,
+  isCampaign = false,
+  campaignLevel = 1,
+  onLevelCompleted,
   onGameCompleted,
   onBackToMenu,
   lang,
   theme = 'dark'
 }: MazeBoardProps) {
   // Determine grid size based on difficulty
-  const getGridConfig = (diff: Difficulty) => {
+  const getGridConfig = (diff: Difficulty, isCamp?: boolean, campLvl?: number) => {
+    if (isCamp && campLvl) {
+      const levelCols = Math.min(21, 4 + Math.floor((campLvl - 1) * 0.35));
+      const levelRows = levelCols;
+      const totalCells = levelCols * levelRows;
+      const gasCount = Math.max(1, Math.min(12, Math.floor(totalCells * 0.03)));
+      const valCount = Math.max(1, Math.min(5, Math.floor(totalCells * 0.015)));
+      const hasPortal = campLvl >= 5;
+      return { cols: levelCols, rows: levelRows, gasCount, valCount, hasPortal };
+    }
+
     switch (diff) {
       case 'standard':
         return { cols: 10, rows: 10, gasCount: 4, valCount: 2, hasPortal: false };
@@ -67,10 +83,12 @@ export default function MazeBoard({
         return { cols: 15, rows: 15, gasCount: 7, valCount: 3, hasPortal: true };
       case 'superchain':
         return { cols: 21, rows: 21, gasCount: 12, valCount: 4, hasPortal: true };
+      default:
+        return { cols: 10, rows: 10, gasCount: 4, valCount: 2, hasPortal: false };
     }
   };
 
-  const config = getGridConfig(difficulty);
+  const config = getGridConfig(difficulty, isCampaign, campaignLevel);
   const cols = config.cols;
   const rows = config.rows;
 
@@ -326,13 +344,13 @@ export default function MazeBoard({
     }
   };
 
-  // Run the Maze Gen on startup and on difficulty shift
+  // Run the Maze Gen on startup and on difficulty shift or level shift
   useEffect(() => {
     generateMaze();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [difficulty]);
+  }, [difficulty, isCampaign, campaignLevel]);
 
   // Track if hints are enabled during this maze run
   useEffect(() => {
@@ -515,21 +533,30 @@ export default function MazeBoard({
         badges: currentEarnedBadges
       };
 
-      // Retrieve current leaderboard scores
-      const savedScores = localStorage.getItem('base_maze_scores');
-      let currentScores: ScoreEntry[] = [];
-      if (savedScores) {
-        try {
-          currentScores = JSON.parse(savedScores);
-        } catch (e) {
-          currentScores = [];
+      if (isCampaign) {
+        // Update level unlocks
+        const currentUnlocked = Number(localStorage.getItem('base_maze_unlocked_level') || '1');
+        const nextLevel = campaignLevel + 1;
+        if (nextLevel > currentUnlocked && nextLevel <= 50) {
+          localStorage.setItem('base_maze_unlocked_level', String(nextLevel));
         }
-      }
-      // Add current score and save
-      const updatedScores = [...currentScores, result].sort((a, b) => a.time - b.time);
-      localStorage.setItem('base_maze_scores', JSON.stringify(updatedScores));
+      } else {
+        // Retrieve current leaderboard scores
+        const savedScores = localStorage.getItem('base_maze_scores');
+        let currentScores: ScoreEntry[] = [];
+        if (savedScores) {
+          try {
+            currentScores = JSON.parse(savedScores);
+          } catch (e) {
+            currentScores = [];
+          }
+        }
+        // Add current score and save
+        const updatedScores = [...currentScores, result].sort((a, b) => a.time - b.time);
+        localStorage.setItem('base_maze_scores', JSON.stringify(updatedScores));
 
-      onGameCompleted(result);
+        onGameCompleted(result);
+      }
     }, 1500);
   };
 
@@ -948,6 +975,41 @@ export default function MazeBoard({
                         );
                       })}
                     </div>
+                  </div>
+                )}
+
+                {isCampaign && (
+                  <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full max-w-xs px-4">
+                    {campaignLevel < 50 ? (
+                      <button
+                        onClick={() => {
+                          sound.playPowerup();
+                          if (onLevelCompleted) {
+                            onLevelCompleted(campaignLevel + 1);
+                          }
+                        }}
+                        className="flex-1 py-2.5 bg-[#0052FF] hover:bg-[#0042cc] text-white font-display font-bold rounded-xl text-xs shadow-md shadow-blue-500/20 cursor-pointer transition text-center"
+                      >
+                        {lang === 'id' ? `Level Berikutnya (${campaignLevel + 1})` : `Next Level (${campaignLevel + 1})`}
+                      </button>
+                    ) : (
+                      <div className="w-full text-center py-2 text-amber-500 font-extrabold font-mono text-xs">
+                        🎉 {lang === 'id' ? 'TAMAT! SELESAI LEVEL 50!' : 'CAMPAIGN COMPLETED! LEVEL 50!'}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        sound.playMove();
+                        onBackToMenu();
+                      }}
+                      className={`flex-1 py-2.5 font-display font-semibold rounded-xl text-xs transition cursor-pointer border ${
+                        isDark 
+                          ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white' 
+                          : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 shadow-sm'
+                      }`}
+                    >
+                      {lang === 'id' ? 'Kembali ke Menu' : 'Back to Menu'}
+                    </button>
                   </div>
                 )}
               </motion.div>

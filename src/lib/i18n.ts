@@ -37,6 +37,11 @@ export interface TranslationDictionary {
     medium_desc: string;
     hard_title: string;
     hard_desc: string;
+    campaign_tab: string;
+    classic_tab: string;
+    campaign_progress: string;
+    campaign_desc: string;
+    level_label: string;
   };
   leaderboard_screen: {
     title: string;
@@ -142,6 +147,11 @@ export const translations: Record<Language, TranslationDictionary> = {
       medium_desc: "Aggregated roll-up scale. Includes L1 ↔ L2 Bridge Portal for teleportation.",
       hard_title: "Superchain Block",
       hard_desc: "Dense Superchain maze. Recommended for pro builders with high TPS!",
+      campaign_tab: "Campaign Levels (1-50)",
+      classic_tab: "Classic Speedrun",
+      campaign_progress: "Campaign Progress",
+      campaign_desc: "Unlock levels linearly. Master your skills from Level 1 to Level 50!",
+      level_label: "Level",
     },
     leaderboard_screen: {
       title: "BEST VALIDATOR BOARD",
@@ -254,6 +264,11 @@ export const translations: Record<Language, TranslationDictionary> = {
       medium_desc: "Skala roll-up teragregasi. Memasukkan Bridge Portal L1 ↔ L2 untuk teleportasi.",
       hard_title: "Superchain Block",
       hard_desc: "Labirin padat Superchain. Direkomendasikan bagi builder pro dengan TPS tinggi!",
+      campaign_tab: "Mode Level (1-50)",
+      classic_tab: "Speedrun Klasik",
+      campaign_progress: "Progres Kampanye",
+      campaign_desc: "Buka tingkat level secara linear. Kuasai keahlian Anda dari Level 1 hingga Level 50!",
+      level_label: "Level",
     },
     leaderboard_screen: {
       title: "BOARD VALIDATOR TERBAIK",
@@ -366,6 +381,11 @@ export const translations: Record<Language, TranslationDictionary> = {
       medium_desc: "聚合 Rollup 规模。包含用于瞬间移动的 L1 ↔ L2 桥传送门。",
       hard_title: "超级链区块",
       hard_desc: "密集的超级链迷宫。推荐给具有高 TPS 的专业构建者！",
+      campaign_tab: "闯关模式 (1-50)",
+      classic_tab: "经典竞速",
+      campaign_progress: "闯关进度",
+      campaign_desc: "线性解锁关卡。从第 1 关到第 50 关，完美磨练您的技能！",
+      level_label: "关卡",
     },
     leaderboard_screen: {
       title: "最佳验证节点榜",
@@ -478,6 +498,11 @@ export const translations: Record<Language, TranslationDictionary> = {
       medium_desc: "Échelle de roll-up agrégée. Inclut un portail de pont L1 ↔ L2 pour la téléportation.",
       hard_title: "Bloc Superchain",
       hard_desc: "Labyrinthe dense Superchain. Recommandé pour les builders pro à fort TPS !",
+      campaign_tab: "Mode Campagne (1-50)",
+      classic_tab: "Speedrun Classique",
+      campaign_progress: "Progrès Campagne",
+      campaign_desc: "Débloquez les niveaux linéairement. Maîtrisez vos compétences du Niveau 1 au Niveau 50 !",
+      level_label: "Niveau",
     },
     leaderboard_screen: {
       title: "TABLEAU DES MEILLEURS VALIDATEURS",

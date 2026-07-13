@@ -42,6 +42,11 @@ export default function App() {
     return (localStorage.getItem('base_maze_theme') as 'light' | 'dark') || 'light';
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [gameMode, setGameMode] = useState<'classic' | 'campaign'>('campaign');
+  const [campaignLevel, setCampaignLevel] = useState<number>(1);
+  const [unlockedLevel, setUnlockedLevel] = useState<number>(() => {
+    return Number(localStorage.getItem('base_maze_unlocked_level') || '1');
+  });
 
   // Auto-rotate news ticker updates
   useEffect(() => {
@@ -63,6 +68,19 @@ export default function App() {
     setPlayerName(name);
     localStorage.setItem('base_maze_player_name', name);
     setScreen('playing');
+  };
+
+  const handleLevelCompleted = (nextLvl: number) => {
+    sound.playPowerup();
+    setCampaignLevel(nextLvl);
+    const currentUnlocked = Number(localStorage.getItem('base_maze_unlocked_level') || '1');
+    setUnlockedLevel(currentUnlocked);
+  };
+
+  const handleBackToMenu = () => {
+    const currentUnlocked = Number(localStorage.getItem('base_maze_unlocked_level') || '1');
+    setUnlockedLevel(currentUnlocked);
+    setScreen('home');
   };
 
   const handleGameCompleted = (score: ScoreEntry) => {
@@ -215,8 +233,7 @@ export default function App() {
 
             {/* Name/Title */}
             <div 
-              onClick={() => { sound.playMove(); setScreen('home'); }}
-              className="flex flex-col items-center justify-center flex-grow mx-2 text-center cursor-pointer"
+              className="flex flex-col items-center justify-center flex-grow mx-2 text-center select-none"
             >
               <span className={`font-display font-black text-xs tracking-tight leading-tight ${
                 isDark ? 'text-white' : 'text-slate-900'
@@ -395,78 +412,168 @@ export default function App() {
                     {translations[lang].difficulty.choose_structure}
                   </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    
-                    {/* Level 1: Easy */}
+                  {/* MODE TABS */}
+                  <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-4 border border-slate-200/50 dark:border-slate-800/50">
                     <button
                       type="button"
-                      onClick={() => { sound.playMove(); setDifficulty('standard'); }}
-                      className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
-                        difficulty === 'standard'
-                          ? isDark
-                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                          : isDark
-                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                      onClick={() => { sound.playMove(); setGameMode('campaign'); }}
+                      className={`flex-1 py-2 text-xs font-display font-bold rounded-lg transition-all cursor-pointer ${
+                        gameMode === 'campaign'
+                          ? 'bg-[#0052FF] text-white shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.easy_title}</span>
-                        <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>10 x 10</span>
-                      </div>
-                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
-                        {translations[lang].difficulty.easy_desc}
-                      </p>
+                      🏆 {translations[lang].difficulty.campaign_tab}
                     </button>
-
-                    {/* Level 2: Medium */}
                     <button
                       type="button"
-                      onClick={() => { sound.playMove(); setDifficulty('batch'); }}
-                      className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
-                        difficulty === 'batch'
-                          ? isDark
-                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                          : isDark
-                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                      onClick={() => { sound.playMove(); setGameMode('classic'); }}
+                      className={`flex-1 py-2 text-xs font-display font-bold rounded-lg transition-all cursor-pointer ${
+                        gameMode === 'classic'
+                          ? 'bg-[#0052FF] text-white shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.medium_title}</span>
-                        <span className="text-[10px] font-mono text-[#0052FF] font-bold">15 x 15</span>
-                      </div>
-                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
-                        {translations[lang].difficulty.medium_desc}
-                      </p>
+                      ⚡ {translations[lang].difficulty.classic_tab}
                     </button>
-
-                    {/* Level 3: Hard */}
-                    <button
-                      type="button"
-                      onClick={() => { sound.playMove(); setDifficulty('superchain'); }}
-                      className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
-                        difficulty === 'superchain'
-                          ? isDark
-                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                          : isDark
-                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.hard_title}</span>
-                        <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>21 x 21</span>
-                      </div>
-                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
-                        {translations[lang].difficulty.hard_desc}
-                      </p>
-                    </button>
-
                   </div>
+
+                  {gameMode === 'campaign' ? (
+                    <div>
+                      {/* Campaign summary */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-[11px] font-mono font-bold uppercase tracking-wide flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          {translations[lang].difficulty.campaign_progress}: <span className="text-[#0052FF]">{unlockedLevel} / 50</span>
+                        </span>
+                        <span className="text-[11px] font-mono text-[#0052FF] font-bold">
+                          {Math.round((unlockedLevel / 50) * 100)}%
+                        </span>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mb-3 border border-slate-200/20">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#0052FF] to-sky-400 rounded-full transition-all duration-500"
+                          style={{ width: `${(unlockedLevel / 50) * 100}%` }}
+                        ></div>
+                      </div>
+
+                      <p className={`text-[11px] mb-4 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        {translations[lang].difficulty.campaign_desc}
+                      </p>
+
+                      {/* 1 - 50 Level Grid */}
+                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 max-h-52 overflow-y-auto pr-1">
+                        {Array.from({ length: 50 }).map((_, i) => {
+                          const lvl = i + 1;
+                          const isUnlocked = lvl <= unlockedLevel;
+                          const isSelected = lvl === campaignLevel;
+                          return (
+                            <button
+                              key={lvl}
+                              type="button"
+                              disabled={!isUnlocked}
+                              onClick={() => {
+                                sound.playMove();
+                                setCampaignLevel(lvl);
+                              }}
+                              className={`relative py-2 rounded-lg text-center text-xs font-mono font-extrabold border transition-all flex flex-col items-center justify-center cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#0052FF] border-[#0052FF] text-white shadow-md shadow-blue-500/20 scale-105 z-10'
+                                  : isUnlocked
+                                    ? isDark
+                                      ? 'bg-slate-900/80 border-slate-800 text-slate-200 hover:border-[#0052FF]'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:border-[#0052FF] hover:bg-blue-50/20 shadow-sm'
+                                    : 'bg-slate-100 dark:bg-slate-950/40 border-slate-200 dark:border-slate-900 text-slate-400/30 dark:text-slate-600/30 cursor-not-allowed'
+                              }`}
+                            >
+                              {isUnlocked ? (
+                                <span>{lvl}</span>
+                              ) : (
+                                <span className="text-[10px]">🔒</span>
+                              )}
+                              {isUnlocked && lvl < unlockedLevel && (
+                                <span className="absolute bottom-0.5 right-1 text-[7px] text-emerald-500 font-bold">✓</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 animate-fade-in">
+                      
+                      {/* Level 1: Easy */}
+                      <button
+                        type="button"
+                        onClick={() => { sound.playMove(); setDifficulty('standard'); }}
+                        className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
+                          difficulty === 'standard'
+                            ? isDark
+                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                            : isDark
+                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.easy_title}</span>
+                          <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>10 x 10</span>
+                        </div>
+                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                          {translations[lang].difficulty.easy_desc}
+                        </p>
+                      </button>
+
+                      {/* Level 2: Medium */}
+                      <button
+                        type="button"
+                        onClick={() => { sound.playMove(); setDifficulty('batch'); }}
+                        className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
+                          difficulty === 'batch'
+                            ? isDark
+                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                            : isDark
+                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.medium_title}</span>
+                          <span className="text-[10px] font-mono text-[#0052FF] font-bold">15 x 15</span>
+                        </div>
+                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                          {translations[lang].difficulty.medium_desc}
+                        </p>
+                      </button>
+
+                      {/* Level 3: Hard */}
+                      <button
+                        type="button"
+                        onClick={() => { sound.playMove(); setDifficulty('superchain'); }}
+                        className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
+                          difficulty === 'superchain'
+                            ? isDark
+                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                            : isDark
+                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.hard_title}</span>
+                          <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>21 x 21</span>
+                        </div>
+                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                          {translations[lang].difficulty.hard_desc}
+                        </p>
+                      </button>
+
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -483,8 +590,11 @@ export default function App() {
               <MazeBoard
                 playerName={playerName}
                 difficulty={difficulty}
+                isCampaign={gameMode === 'campaign'}
+                campaignLevel={campaignLevel}
+                onLevelCompleted={handleLevelCompleted}
                 onGameCompleted={handleGameCompleted}
-                onBackToMenu={() => setScreen('home')}
+                onBackToMenu={handleBackToMenu}
                 lang={lang}
                 theme={theme}
               />
