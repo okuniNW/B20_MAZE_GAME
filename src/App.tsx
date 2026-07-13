@@ -13,39 +13,44 @@ import {
   Coins,
   ShieldCheck,
   TrendingUp,
-  ExternalLink
+  ExternalLink,
+  Menu,
+  ChevronDown,
+  Sun,
+  Moon,
+  Globe
 } from 'lucide-react';
 import { Difficulty, ScoreEntry } from './types';
 import Onboarding from './components/Onboarding';
 import MazeBoard from './components/MazeBoard';
 import Leaderboard from './components/Leaderboard';
 import { sound } from './components/SoundEngine';
-
-const NEWS_TICKER_ITEMS = [
-  "⚡ BASE FEES: Rata-rata biaya transaksi di jaringan Base di bawah $0.001 per tx berkat upgrade EIP-4844!",
-  "🔵 COINBASE SMART WALLET: Fitur passkey memudahkan jutaan builder onboarding tanpa seed phrase tradisional!",
-  "🌐 SUPERCHAIN INTEROP: Interoperabilitas mulus antar jaringan L2 OP Stack dimulai di Base!",
-  "🛠️ BASE IS FOR BUILDERS: Jesse Pollak mengumumkan Base Camp Hackathon terbaru untuk para developer Asia!",
-  "📈 PROTOCOL GROW: Total Value Locked (TVL) di Base menembus rekor baru seiring bertambahnya aplikasi dApp!",
-  "🚀 SPEED BOOSTER: Waktu blokir di Base stabil di 2.0 detik, memproses ribuan transaksi per detik!"
-];
+import { Language, translations } from './lib/i18n';
 
 export default function App() {
   const [screen, setScreen] = useState<'home' | 'playing' | 'leaderboard'>('home');
+  const [lang, setLang] = useState<Language>(() => {
+    return (localStorage.getItem('base_maze_lang') as Language) || 'en';
+  });
   const [playerName, setPlayerName] = useState<string>(() => {
     return localStorage.getItem('base_maze_player_name') || '';
   });
   const [difficulty, setDifficulty] = useState<Difficulty>('standard');
   const [isMuted, setIsMuted] = useState(false);
   const [tickerIndex, setTickerIndex] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('base_maze_theme') as 'light' | 'dark') || 'light';
+  });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Auto-rotate news ticker updates
   useEffect(() => {
+    const tickers = translations[lang].news_ticker;
     const interval = setInterval(() => {
-      setTickerIndex((prev) => (prev + 1) % NEWS_TICKER_ITEMS.length);
+      setTickerIndex((prev) => (prev + 1) % tickers.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [lang]);
 
   const handleToggleMute = () => {
     const nextMuted = !isMuted;
@@ -65,67 +70,296 @@ export default function App() {
     setScreen('leaderboard');
   };
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans selection:bg-[#0052FF]/30 selection:text-blue-200">
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 selection:bg-[#0052FF]/30 ${
+      isDark ? 'bg-[#020617] text-slate-100 selection:text-blue-200' : 'bg-slate-50 text-slate-900 selection:text-blue-800'
+    }`}>
       
       {/* HEADER SECTION */}
-      <header className="h-16 border-b border-slate-800 bg-[#020617]/80 backdrop-blur-md sticky top-0 z-50">
+      <header className={`h-16 border-b sticky top-0 z-50 backdrop-blur-md transition-colors duration-300 ${
+        isDark ? 'border-slate-800 bg-[#020617]/80 text-slate-100' : 'border-slate-200 bg-white/80 text-slate-900 shadow-sm'
+      }`}>
         <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
           
-          {/* Logo & Brand title */}
-          <div 
-            onClick={() => { sound.playMove(); setScreen('home'); }}
-            className="flex items-center gap-2.5 cursor-pointer group"
-          >
-            {/* Minimal Base blue/white circle logo */}
-            <div className="relative w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center border-2 border-white shadow-md transition-transform duration-300 group-hover:rotate-12">
-              <div className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-[#0052FF] rounded-full"></div>
+          {/* DESKTOP HEADER (hidden on mobile, visible on md+) */}
+          <div className="hidden md:flex items-center justify-between w-full h-full">
+            
+            {/* Logo & Brand title */}
+            <div 
+              onClick={() => { sound.playMove(); setScreen('home'); }}
+              className="flex items-center gap-2.5 cursor-pointer group"
+            >
+              {/* Minimal Base blue/white circle logo */}
+              <div className="relative w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center border-2 border-white shadow-md transition-transform duration-300 group-hover:rotate-12">
+                <div className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-[#0052FF] rounded-full"></div>
+                </div>
+              </div>
+
+              <div>
+                <span className="font-display font-black text-sm tracking-tight flex items-center gap-1.5">
+                  {translations[lang].header.title}
+                </span>
+                <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none">
+                  {translations[lang].header.subtitle}
+                </span>
               </div>
             </div>
 
-            <div>
-              <span className="font-display font-black text-sm tracking-tight flex items-center gap-1.5">
-                B20 <span className="text-[#0052FF]">MAZE GAME</span>
-              </span>
-              <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none">
-                Build By Sividelia_okuni6
-              </span>
+            {/* Elegant Dark Header Info Badges & controls */}
+            <div className="flex items-center gap-4">
+              <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border ${
+                isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+              }`}>
+                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
+                <span className={`text-[10px] font-mono uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  {translations[lang].header.base_mainnet}
+                </span>
+              </div>
+
+              {/* Quick utility controls */}
+              <div className="flex items-center gap-2">
+                {/* Language Selector */}
+                <div className={`flex items-center border rounded-lg p-0.5 gap-0.5 mr-1 ${
+                  isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+                }`}>
+                  {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => {
+                        sound.playMove();
+                        setLang(l);
+                        localStorage.setItem('base_maze_lang', l);
+                      }}
+                      className={`px-1.5 py-1 rounded text-[9px] font-mono uppercase font-black transition-all cursor-pointer ${
+                        lang === l
+                          ? 'bg-[#0052FF] text-white shadow-sm'
+                          : isDark
+                            ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                      }`}
+                      title={l === 'en' ? 'English' : l === 'id' ? 'Bahasa Indonesia' : l === 'zh' ? '中文' : 'Français'}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Leaderboard */}
+                <button
+                  onClick={() => {
+                    sound.playMove();
+                    setScreen(screen === 'leaderboard' ? 'home' : 'leaderboard');
+                  }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-display font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                    screen === 'leaderboard'
+                      ? 'bg-[#0052FF] hover:bg-[#0042cc] border border-[#0052FF] text-white shadow-lg shadow-[#0052FF]/20'
+                      : isDark
+                        ? 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                  }`}
+                >
+                  <Trophy size={14} />
+                  <span>{translations[lang].header.leaderboard}</span>
+                </button>
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={() => {
+                    sound.playPowerup();
+                    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                    setTheme(nextTheme);
+                    localStorage.setItem('base_maze_theme', nextTheme);
+                  }}
+                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
+                    isDark
+                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
+                  }`}
+                  title={isDark ? translations[lang].header.theme_light : translations[lang].header.theme_dark}
+                >
+                  {isDark ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
+                </button>
+
+                {/* Mute Button */}
+                <button
+                  onClick={handleToggleMute}
+                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
+                    isDark
+                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
+                  }`}
+                  title={isMuted ? translations[lang].header.unmute : translations[lang].header.mute}
+                >
+                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Elegant Dark Header Info Badges */}
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 bg-slate-900 px-4 py-1.5 rounded-full border border-slate-800">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
-              <span className="text-[10px] font-mono text-slate-300 uppercase tracking-widest">Base Mainnet</span>
+          {/* MOBILE HEADER (visible on mobile, hidden on md+) */}
+          <div className="flex md:hidden w-full items-center justify-between">
+            {/* Logo */}
+            <div 
+              onClick={() => { sound.playMove(); setScreen('home'); }}
+              className="flex items-center cursor-pointer group"
+            >
+              <div className="relative w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center border-2 border-white shadow-md transition-transform duration-300 group-hover:rotate-12">
+                <div className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-[#0052FF] rounded-full"></div>
+                </div>
+              </div>
             </div>
 
-            {/* Quick utility controls */}
-            <div className="flex items-center gap-2">
+            {/* Name/Title */}
+            <div 
+              onClick={() => { sound.playMove(); setScreen('home'); }}
+              className="flex flex-col items-center justify-center flex-grow mx-2 text-center cursor-pointer"
+            >
+              <span className={`font-display font-black text-xs tracking-tight leading-tight ${
+                isDark ? 'text-white' : 'text-slate-900'
+              }`}>
+                {translations[lang].header.title}
+              </span>
+              <span className="text-[7px] font-mono text-slate-500 uppercase tracking-widest leading-none mt-0.5">
+                {translations[lang].header.subtitle}
+              </span>
+            </div>
+
+            {/* Dropdown Menu on Right */}
+            <div className="relative">
               <button
-                onClick={() => {
-                  sound.playMove();
-                  setScreen(screen === 'leaderboard' ? 'home' : 'leaderboard');
-                }}
-                className={`px-4 py-1.5 rounded-lg text-xs font-display font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                  screen === 'leaderboard'
-                    ? 'bg-[#0052FF] hover:bg-[#0042cc] border border-[#0052FF] text-white shadow-lg shadow-[#0052FF]/20'
-                    : 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                onClick={() => { sound.playMove(); setIsMenuOpen(!isMenuOpen); }}
+                className={`p-2 rounded-xl border flex items-center justify-center transition cursor-pointer ${
+                  isDark 
+                    ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white' 
+                    : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 shadow-sm'
                 }`}
+                aria-label="Toggle menu"
               >
-                <Trophy size={14} />
-                <span>Leaderboard</span>
+                <Menu size={16} />
               </button>
 
-              <button
-                onClick={handleToggleMute}
-                className="p-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-400 hover:text-slate-200 transition cursor-pointer"
-                title={isMuted ? "Unmute sounds" : "Mute sounds"}
-              >
-                {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-              </button>
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className={`absolute right-0 mt-2 w-60 rounded-2xl border p-4 shadow-xl z-50 flex flex-col gap-3 ${
+                        isDark 
+                          ? 'bg-slate-950 border-slate-800 text-slate-200' 
+                          : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      {/* Language selection header */}
+                      <div>
+                        <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                          {lang === 'id' ? 'Bahasa / Language' : 'Language / Bahasa'}
+                        </span>
+                        <div className={`flex items-center w-full border rounded-xl p-0.5 gap-0.5 ${
+                          isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+                        }`}>
+                          {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
+                            <button
+                              key={l}
+                              onClick={() => {
+                                sound.playMove();
+                                setLang(l);
+                                localStorage.setItem('base_maze_lang', l);
+                                setIsMenuOpen(false);
+                              }}
+                              className={`flex-1 py-1 rounded text-[10px] font-mono uppercase font-black transition-all cursor-pointer ${
+                                lang === l
+                                  ? 'bg-[#0052FF] text-white shadow-sm'
+                                  : isDark
+                                    ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                              }`}
+                            >
+                              {l}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className={`h-px ${isDark ? 'bg-slate-800/60' : 'bg-slate-200/80'}`} />
+
+                      {/* Leaderboard button */}
+                      <button
+                        onClick={() => {
+                          sound.playMove();
+                          setScreen(screen === 'leaderboard' ? 'home' : 'leaderboard');
+                          setIsMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center justify-between border transition cursor-pointer ${
+                          screen === 'leaderboard'
+                            ? 'bg-[#0052FF] border-[#0052FF] text-white shadow-md'
+                            : isDark
+                              ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                              : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Trophy size={14} />
+                          {translations[lang].header.leaderboard}
+                        </span>
+                        <ChevronDown size={14} className="opacity-40 -rotate-90" />
+                      </button>
+
+                      {/* Sound Toggle */}
+                      <button
+                        onClick={() => {
+                          handleToggleMute();
+                          setIsMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
+                          isDark
+                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                        }`}
+                      >
+                        {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                        <span>
+                          {isMuted ? translations[lang].header.unmute : translations[lang].header.mute}
+                        </span>
+                      </button>
+
+                      {/* Light/Dark mode toggle */}
+                      <button
+                        onClick={() => {
+                          sound.playPowerup();
+                          const nextTheme = theme === 'dark' ? 'light' : 'dark';
+                          setTheme(nextTheme);
+                          localStorage.setItem('base_maze_theme', nextTheme);
+                          setIsMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
+                          isDark
+                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                        }`}
+                      >
+                        {isDark ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
+                        <span>
+                          {isDark ? translations[lang].header.theme_light : translations[lang].header.theme_dark}
+                        </span>
+                      </button>
+
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
+
           </div>
 
         </div>
@@ -145,14 +379,20 @@ export default function App() {
               className="w-full flex flex-col items-center"
             >
               {/* Onboarding Widget with nested builder start form */}
-              <Onboarding onStart={handleStartGame} />
+              <Onboarding onStart={handleStartGame} lang={lang} theme={theme} />
 
               {/* LEVEL CONFIGURATION CARDS (Difficulty selector) */}
               <div className="w-full max-w-2xl px-4 mt-2">
-                <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl shadow-xl backdrop-blur-sm">
-                  <h3 className="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                <div className={`p-6 rounded-2xl shadow-xl backdrop-blur-sm border transition-all duration-300 ${
+                  isDark 
+                    ? 'bg-slate-900/50 border-slate-800' 
+                    : 'bg-white border-slate-200 border-t-4 border-t-amber-400 shadow-lg shadow-blue-500/5'
+                }`}>
+                  <h3 className={`text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-1.5 ${
+                    isDark ? 'text-slate-400' : 'text-slate-600 font-bold'
+                  }`}>
                     <Layers size={12} className="text-[#0052FF]" />
-                    PILIH STRUKTUR BLOK LABIRIN
+                    {translations[lang].difficulty.choose_structure}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -163,16 +403,20 @@ export default function App() {
                       onClick={() => { sound.playMove(); setDifficulty('standard'); }}
                       className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                         difficulty === 'standard'
-                          ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                          ? isDark
+                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                          : isDark
+                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-display font-bold text-sm text-slate-200">Standard Block</span>
-                        <span className="text-[10px] font-mono text-emerald-400 font-bold">10 x 10</span>
+                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.easy_title}</span>
+                        <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>10 x 10</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        Sempurna untuk uji pemanasan. Transaksi simpel, tanpa jembatan teleportasi.
+                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        {translations[lang].difficulty.easy_desc}
                       </p>
                     </button>
 
@@ -182,16 +426,20 @@ export default function App() {
                       onClick={() => { sound.playMove(); setDifficulty('batch'); }}
                       className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                         difficulty === 'batch'
-                          ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                          ? isDark
+                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                          : isDark
+                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-display font-bold text-sm text-slate-200">Aggregated Batch</span>
+                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.medium_title}</span>
                         <span className="text-[10px] font-mono text-[#0052FF] font-bold">15 x 15</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        Skala roll-up teragregasi. Memasukkan Bridge Portal L1 ↔ L2 untuk teleportasi.
+                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        {translations[lang].difficulty.medium_desc}
                       </p>
                     </button>
 
@@ -201,16 +449,20 @@ export default function App() {
                       onClick={() => { sound.playMove(); setDifficulty('superchain'); }}
                       className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                         difficulty === 'superchain'
-                          ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                          ? isDark
+                            ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
+                            : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
+                          : isDark
+                            ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                            : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-display font-bold text-sm text-slate-200">Superchain Block</span>
-                        <span className="text-[10px] font-mono text-purple-400 font-bold">21 x 21</span>
+                        <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.hard_title}</span>
+                        <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>21 x 21</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                        Labirin padat Superchain. Direkomendasikan bagi builder pro dengan TPS tinggi!
+                      <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        {translations[lang].difficulty.hard_desc}
                       </p>
                     </button>
 
@@ -222,33 +474,37 @@ export default function App() {
 
           {screen === 'playing' && (
             <motion.div
-              key="playing-screen"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.3 }}
+               key="playing-screen"
+               initial={{ opacity: 0, scale: 0.98 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.98 }}
+               transition={{ duration: 0.3 }}
             >
               <MazeBoard
                 playerName={playerName}
                 difficulty={difficulty}
                 onGameCompleted={handleGameCompleted}
                 onBackToMenu={() => setScreen('home')}
+                lang={lang}
+                theme={theme}
               />
             </motion.div>
           )}
 
           {screen === 'leaderboard' && (
             <motion.div
-              key="leaderboard-screen"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
+               key="leaderboard-screen"
+               initial={{ opacity: 0, y: 15 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: -15 }}
+               transition={{ duration: 0.3 }}
             >
               <Leaderboard 
                 onBackToMenu={() => setScreen('home')} 
                 currentDifficulty={difficulty}
                 playerName={playerName}
+                lang={lang}
+                theme={theme}
               />
             </motion.div>
           )}
@@ -257,11 +513,15 @@ export default function App() {
       </main>
 
       {/* FOOTER & LIVE BLOCK UPDATES TICKER */}
-      <footer className="border-t border-slate-800 bg-[#020617] py-4 mt-auto">
+      <footer className={`border-t py-4 mt-auto transition-colors duration-300 ${
+        isDark ? 'border-slate-800 bg-[#020617]' : 'border-slate-200 bg-slate-100 text-slate-800'
+      }`}>
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* News Ticker Panel */}
-          <div className="w-full md:max-w-2xl bg-slate-900/30 border border-slate-800/80 rounded-xl px-3.5 py-2 overflow-hidden flex items-center gap-3">
+          <div className={`w-full md:max-w-2xl border rounded-xl px-3.5 py-2 overflow-hidden flex items-center gap-3 ${
+            isDark ? 'bg-slate-900/30 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
             <span className="bg-[#0052FF]/10 text-[#0052FF] border border-[#0052FF]/20 text-[9px] font-mono font-bold px-2 py-0.5 rounded flex-shrink-0 animate-pulse-ring">
               LIVE BROADCAST
             </span>
@@ -274,24 +534,28 @@ export default function App() {
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -12, opacity: 0 }}
                   transition={{ duration: 0.4 }}
-                  className="text-xs font-mono text-slate-400 absolute inset-x-0 truncate"
+                  className={`text-xs font-mono absolute inset-x-0 truncate ${
+                    isDark ? 'text-slate-400' : 'text-slate-600'
+                  }`}
                 >
-                  {NEWS_TICKER_ITEMS[tickerIndex]}
+                  {translations[lang].news_ticker[tickerIndex]}
                 </motion.p>
               </AnimatePresence>
             </div>
           </div>
 
-          {/* Copyright details & contract address inside Elegant Dark Theme */}
+          {/* Copyright details & contract address inside Elegant Theme */}
           <div className="flex flex-col sm:flex-row items-center gap-3 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] shadow-[0_0_6px_#0052FF]"></span>
-              <span>B20 MAZE GAME</span>
+              <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>B20 MAZE GAME</span>
             </div>
             <span className="hidden sm:inline text-slate-700">•</span>
-            <span>Build By Sividelia_okuni6</span>
+            <span className={isDark ? 'text-slate-500' : 'text-slate-600'}>Build By Sividelia_okuni6</span>
             <span className="hidden sm:inline text-slate-700">•</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Contract: 0xBASE...0001</span>
+            <span className={`hover:text-[#0052FF] cursor-pointer transition-colors ${
+              isDark ? 'text-slate-500 hover:text-white' : 'text-slate-600'
+            }`}>Contract: 0xBASE...0001</span>
           </div>
 
         </div>

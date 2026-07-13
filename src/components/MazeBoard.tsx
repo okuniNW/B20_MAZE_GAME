@@ -28,6 +28,7 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
+import { Language, translations } from '../lib/i18n';
 
 interface Particle {
   id: number;
@@ -45,13 +46,17 @@ interface MazeBoardProps {
   difficulty: Difficulty;
   onGameCompleted: (score: ScoreEntry) => void;
   onBackToMenu: () => void;
+  lang: Language;
+  theme?: 'light' | 'dark';
 }
 
 export default function MazeBoard({
   playerName,
   difficulty,
   onGameCompleted,
-  onBackToMenu
+  onBackToMenu,
+  lang,
+  theme = 'dark'
 }: MazeBoardProps) {
   // Determine grid size based on difficulty
   const getGridConfig = (diff: Difficulty) => {
@@ -618,34 +623,59 @@ export default function MazeBoard({
 
   // Helper styles for cell walls
   const getCellClassName = (cell: Cell) => {
-    let classes = "relative aspect-square transition-all duration-150 border-slate-800/20 ";
+    const isDark = theme === 'dark';
+    let classes = "relative aspect-square transition-all duration-150 ";
 
-    // Standard walls rendered inside grid borders
-    if (cell.walls.top) classes += "border-t-2 border-t-[#0052FF]/60 ";
-    else classes += "border-t border-t-slate-900/30 ";
+    if (isDark) {
+      classes += "border-slate-800/20 ";
+      if (cell.walls.top) classes += "border-t-2 border-t-[#0052FF]/60 ";
+      else classes += "border-t border-t-slate-900/30 ";
 
-    if (cell.walls.right) classes += "border-r-2 border-r-[#0052FF]/60 ";
-    else classes += "border-r border-r-slate-900/30 ";
+      if (cell.walls.right) classes += "border-r-2 border-r-[#0052FF]/60 ";
+      else classes += "border-r border-r-slate-900/30 ";
 
-    if (cell.walls.bottom) classes += "border-b-2 border-b-[#0052FF]/60 ";
-    else classes += "border-b border-b-slate-900/30 ";
+      if (cell.walls.bottom) classes += "border-b-2 border-b-[#0052FF]/60 ";
+      else classes += "border-b border-b-slate-900/30 ";
 
-    if (cell.walls.left) classes += "border-l-2 border-l-[#0052FF]/60 ";
-    else classes += "border-l border-l-slate-900/30 ";
+      if (cell.walls.left) classes += "border-l-2 border-l-[#0052FF]/60 ";
+      else classes += "border-l border-l-slate-900/30 ";
+    } else {
+      classes += "border-slate-200/50 ";
+      // Use crisp solid Base Blue walls for maximum structural clarity, and golden hints for paths
+      if (cell.walls.top) classes += "border-t-[3px] border-t-[#0052FF] ";
+      else classes += "border-t border-t-amber-100/20 ";
+
+      if (cell.walls.right) classes += "border-r-[3px] border-r-[#0052FF] ";
+      else classes += "border-r border-r-amber-100/20 ";
+
+      if (cell.walls.bottom) classes += "border-b-[3px] border-b-[#0052FF] ";
+      else classes += "border-b border-b-amber-100/20 ";
+
+      if (cell.walls.left) classes += "border-l-[3px] border-l-[#0052FF] ";
+      else classes += "border-l border-l-amber-100/20 ";
+    }
 
     return classes;
   };
+
+  const isDark = theme === 'dark';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto px-4 py-4">
       {/* LEFT COLUMN: Main Game Maze */}
       <div className="lg:col-span-8 flex flex-col items-center">
         {/* Top bar */}
-        <div className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3 shadow-md backdrop-blur-sm">
+        <div className={`w-full border rounded-2xl p-4 mb-4 flex flex-wrap items-center justify-between gap-3 shadow-md backdrop-blur-sm transition-all duration-300 ${
+          isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'
+        }`}>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-mono text-slate-400">Node Connected</span>
-            <span className="text-[10px] font-mono bg-[#0052FF]/10 text-blue-400 px-2 py-0.5 rounded border border-[#0052FF]/20">
+            <span className={`text-xs font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{translations[lang].mazeboard.node_connected}</span>
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+              isDark 
+                ? 'bg-[#0052FF]/10 text-blue-400 border-[#0052FF]/20' 
+                : 'bg-blue-50 text-[#0052FF] border-blue-200 font-bold'
+            }`}>
               {difficulty.toUpperCase()}
             </span>
           </div>
@@ -655,29 +685,41 @@ export default function MazeBoard({
               onClick={() => { sound.playMove(); setShowHint(!showHint); }}
               className={`p-2 rounded-xl border text-xs font-display font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                 showHint
-                  ? 'bg-[#0052FF]/20 border-[#0052FF] text-blue-300'
-                  : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                  ? isDark 
+                    ? 'bg-[#0052FF]/20 border-[#0052FF] text-blue-300'
+                    : 'bg-[#0052FF]/15 border-[#0052FF] text-[#0052FF]'
+                  : isDark
+                    ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
               }`}
-              title="Tampilkan rute hemat gas"
+              title={translations[lang].mazeboard.hint_tooltip}
             >
               <Eye size={14} />
-              <span className="hidden sm:inline">Rute Gas Optimis</span>
+              <span className="hidden sm:inline">{translations[lang].mazeboard.hint_btn}</span>
             </button>
 
             <button
               onClick={runAutoSolve}
               disabled={autoSolving || hasWon}
-              className="p-2 bg-slate-950/80 border border-slate-800 hover:border-purple-500 hover:text-purple-300 rounded-xl text-xs font-display font-semibold flex items-center gap-1.5 text-slate-400 disabled:opacity-50 transition cursor-pointer"
-              title="Validasi Otomatis (Demo)"
+              className={`p-2 border rounded-xl text-xs font-display font-semibold flex items-center gap-1.5 disabled:opacity-50 transition cursor-pointer ${
+                isDark
+                  ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-purple-500 hover:text-purple-300'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-purple-500 hover:text-purple-600'
+              }`}
+              title={translations[lang].mazeboard.autosolve_tooltip}
             >
               <Sparkles size={14} />
-              <span className="hidden sm:inline">Auto-Solve</span>
+              <span className="hidden sm:inline">{translations[lang].mazeboard.autosolve_btn}</span>
             </button>
 
             <button
               onClick={generateMaze}
-              className="p-2 bg-slate-950/80 border border-slate-800 hover:border-slate-700 rounded-xl text-xs text-slate-400 hover:text-slate-200 transition cursor-pointer"
-              title="Acak Ulang Labirin"
+              className={`p-2 border rounded-xl text-xs transition cursor-pointer ${
+                isDark
+                  ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 shadow-sm'
+              }`}
+              title={translations[lang].mazeboard.regen_tooltip}
             >
               <RotateCcw size={14} />
             </button>
@@ -685,10 +727,14 @@ export default function MazeBoard({
         </div>
 
         {/* The Actual Maze Grid */}
-        <div className="relative w-full max-w-xl aspect-square bg-slate-950/80 border border-[#0052FF]/30 rounded-2xl p-2 md:p-3 overflow-hidden shadow-2xl shadow-[#0052FF]/5">
+        <div className={`relative w-full max-w-xl aspect-square rounded-2xl p-2 md:p-3 overflow-hidden shadow-2xl transition-all duration-300 border ${
+          isDark 
+            ? 'bg-slate-950/80 border-[#0052FF]/30 shadow-[#0052FF]/5' 
+            : 'bg-white border-[#0052FF]/40 shadow-xl shadow-blue-500/10'
+        }`}>
           {grid.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center font-mono text-slate-500">
-              Menghasilkan Blok Labirin...
+              {translations[lang].mazeboard.generating_grid}
             </div>
           ) : (
             <div
@@ -715,19 +761,27 @@ export default function MazeBoard({
                     >
                       {/* Background fill if starting / exit / hint path */}
                       {isStart && (
-                        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center font-mono text-[9px] text-blue-400 font-semibold z-0">
-                          Wallet
+                        <div className={`absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold z-0 ${
+                          isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-[#0052FF]/10 text-[#0052FF]'
+                        }`}>
+                          {translations[lang].mazeboard.wallet_label}
                         </div>
                       )}
                       {isExit && (
-                        <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center font-mono text-[9px] text-emerald-400 font-semibold z-0">
-                          Block
+                        <div className={`absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold z-0 ${
+                          isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-700'
+                        }`}>
+                          {translations[lang].mazeboard.block_label}
                         </div>
                       )}
 
-                      {/* Gas-Optimized Route Hint Line */}
+                      {/* Gas-Optimized Route Hint Line - beautifully stylized! */}
                       {isOnHint && !isPlayer && !isStart && !isExit && (
-                        <div className="absolute inset-2 bg-blue-500/15 rounded-full animate-pulse z-0 border border-blue-500/10"></div>
+                        <div className={`absolute inset-2 rounded-full animate-pulse z-0 border ${
+                          isDark 
+                            ? 'bg-blue-500/15 border-blue-500/10' 
+                            : 'bg-amber-400/25 border-amber-400/40 shadow-sm shadow-amber-400/10'
+                        }`}></div>
                       )}
 
                       {/* Render Portal Bridge */}
@@ -768,7 +822,7 @@ export default function MazeBoard({
                           {/* Inner white circle */}
                           <div className="w-[60%] h-[60%] bg-white rounded-full flex items-center justify-center">
                             {/* Inner blue dot */}
-                            <div className="w-[45%] h-[45%] bg-[#0052FF] rounded-full"></div>
+                            <div className="w-[45%] h-[45%] bg-[#0052FF] rounded-full animate-pulse"></div>
                           </div>
                         </motion.div>
                       )}
@@ -791,7 +845,9 @@ export default function MazeBoard({
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="absolute inset-0 bg-[#020617]/95 backdrop-blur-md flex flex-col items-center justify-center z-30"
+                className={`absolute inset-0 backdrop-blur-md flex flex-col items-center justify-center z-30 transition-colors duration-300 ${
+                  isDark ? 'bg-[#020617]/95' : 'bg-white/95 border-2 border-amber-200 rounded-2xl shadow-2xl'
+                }`}
               >
                 {/* Celebration Particle Explosion */}
                 {particles.length > 0 && (
@@ -829,28 +885,38 @@ export default function MazeBoard({
                   </div>
                 )}
 
-                <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full border-2 border-emerald-500 flex items-center justify-center mb-4">
-                  <CheckCircle size={36} />
+                <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mb-4 shadow-lg ${
+                  isDark 
+                    ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' 
+                    : 'bg-emerald-50 border-emerald-500 text-emerald-600'
+                }`}>
+                  <CheckCircle size={36} className="animate-bounce" />
                 </div>
-                <h2 className="text-2xl font-display font-extrabold text-white">BLOCK CONFIRMED!</h2>
-                <p className="text-xs font-mono text-slate-400 mt-1 uppercase">Transaksi Berhasil Ditambahkan Ke Base Chain</p>
+                <h2 className={`text-2xl font-display font-extrabold ${isDark ? 'text-white' : 'text-[#0052FF]'}`}>
+                  {translations[lang].mazeboard.confirmed_title}
+                </h2>
+                <p className={`text-xs font-mono mt-1 uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {translations[lang].mazeboard.confirmed_subtitle}
+                </p>
 
-                <div className="mt-4 flex gap-6 bg-slate-900 border border-slate-800 p-4 rounded-xl text-center font-mono">
+                <div className={`mt-4 flex gap-6 p-4 rounded-xl text-center font-mono border shadow-inner ${
+                  isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+                }`}>
                   <div>
-                    <span className="block text-[10px] text-slate-500 uppercase">Waktu</span>
-                    <span className="text-sm font-bold text-slate-200">{stats.timeElapsed.toFixed(2)}s</span>
+                    <span className="block text-[10px] text-slate-500 uppercase">{translations[lang].mazeboard.time_short}</span>
+                    <span className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{stats.timeElapsed.toFixed(2)}s</span>
                   </div>
-                  <div className="border-r border-slate-800"></div>
+                  <div className={`border-r ${isDark ? 'border-slate-800' : 'border-slate-350'}`}></div>
                   <div>
-                    <span className="block text-[10px] text-slate-500 uppercase">Throughput</span>
-                    <span className="text-sm font-bold text-blue-400">
+                    <span className="block text-[10px] text-slate-500 uppercase">{translations[lang].mazeboard.throughput_short}</span>
+                    <span className="text-sm font-bold text-blue-500">
                       {((cols * rows * 120) / Math.max(0.5, stats.timeElapsed)).toLocaleString(undefined, { maximumFractionDigits: 1 })} TPS
                     </span>
                   </div>
-                  <div className="border-r border-slate-800"></div>
+                  <div className={`border-r ${isDark ? 'border-slate-800' : 'border-slate-350'}`}></div>
                   <div>
                     <span className="block text-[10px] text-slate-500 uppercase">Gas Gwei</span>
-                    <span className="text-sm font-bold text-emerald-400">
+                    <span className="text-sm font-bold text-emerald-500">
                       {Math.max(1, Math.round(stats.gasCost * 1000))}
                     </span>
                   </div>
@@ -859,22 +925,25 @@ export default function MazeBoard({
                 {/* Earned Badges Showcase */}
                 {earnedBadges.length > 0 && (
                   <div className="mt-5 text-center px-4 max-w-sm">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-2">Pencapaian Diperoleh</span>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-2">{translations[lang].mazeboard.earned_badges}</span>
                     <div className="flex flex-wrap justify-center gap-2">
                       {earnedBadges.map(badgeId => {
                         const b = BADGES.find(x => x.id === badgeId);
                         if (!b) return null;
+                        const bLocal = translations[lang].badges[badgeId] || b;
+                        const styleClasses = isDark ? b.color : b.color.replace('bg-rose-500/10', 'bg-rose-50 border-rose-200').replace('text-rose-400', 'text-rose-600 font-bold').replace('bg-teal-500/10', 'bg-teal-50 border-teal-200').replace('text-teal-400', 'text-teal-600 font-bold').replace('bg-[#0052FF]/10', 'bg-blue-50 border-blue-200').replace('text-blue-400', 'text-[#0052FF] font-bold').replace('bg-purple-500/10', 'bg-purple-50 border-purple-200').replace('text-purple-400', 'text-purple-600 font-bold').replace('bg-emerald-500/10', 'bg-emerald-50 border-emerald-200').replace('text-emerald-400', 'text-emerald-600 font-bold').replace('bg-orange-500/10', 'bg-orange-50 border-orange-200').replace('text-orange-400', 'text-orange-600 font-bold').replace('bg-cyan-500/10', 'bg-cyan-50 border-cyan-200').replace('text-cyan-400', 'text-cyan-600 font-bold');
+                        
                         return (
                           <motion.div
                             key={badgeId}
                             initial={{ scale: 0, rotate: -15 }}
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                            className={`text-xs font-mono px-2 py-1 rounded-lg flex items-center gap-1.5 border ${b.color} shadow-lg`}
-                            title={b.description}
+                            className={`text-xs font-mono px-2 py-1 rounded-lg flex items-center gap-1.5 border ${styleClasses} shadow-lg`}
+                            title={bLocal.description}
                           >
                             <span className="text-sm">{b.emoji}</span>
-                            <span className="font-semibold text-[10px]">{b.name}</span>
+                            <span className="font-semibold text-[10px]">{bLocal.name}</span>
                           </motion.div>
                         );
                       })}
@@ -887,8 +956,8 @@ export default function MazeBoard({
         </div>
 
         {/* Keyboards Hints for PC Users */}
-        <p className="hidden md:block text-[10px] font-mono text-slate-500 mt-4 text-center">
-          Gunakan <span className="text-slate-400 px-1 py-0.5 bg-slate-900 rounded">WASD</span> atau <span className="text-slate-400 px-1 py-0.5 bg-slate-900 rounded">Tombol Panah</span> untuk bergerak. Tekan <span className="text-slate-400 px-1 py-0.5 bg-slate-900 rounded">SPACE</span> untuk mendobrak dinding firewall.
+        <p className={`hidden md:block text-[10px] font-mono mt-4 text-center ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+          {translations[lang].mazeboard.keyboard_hints}
         </p>
 
         {/* Mobile touch D-pad */}
@@ -897,7 +966,9 @@ export default function MazeBoard({
             <div></div>
             <button
               onClick={() => movePlayer(0, -1)}
-              className="aspect-square bg-slate-900/60 border border-slate-800 hover:bg-[#0052FF]/20 active:bg-[#0052FF] text-slate-300 active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
+              className={`aspect-square border hover:bg-[#0052FF]/20 active:bg-[#0052FF] active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md transition-colors ${
+                isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-600 shadow-sm'
+              }`}
             >
               <ArrowBigUp size={24} />
             </button>
@@ -905,7 +976,9 @@ export default function MazeBoard({
 
             <button
               onClick={() => movePlayer(-1, 0)}
-              className="aspect-square bg-slate-900/60 border border-slate-800 hover:bg-[#0052FF]/20 active:bg-[#0052FF] text-slate-300 active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
+              className={`aspect-square border hover:bg-[#0052FF]/20 active:bg-[#0052FF] active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md transition-colors ${
+                isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-600 shadow-sm'
+              }`}
             >
               <ArrowBigLeft size={24} />
             </button>
@@ -914,7 +987,9 @@ export default function MazeBoard({
             </div>
             <button
               onClick={() => movePlayer(1, 0)}
-              className="aspect-square bg-slate-900/60 border border-slate-800 hover:bg-[#0052FF]/20 active:bg-[#0052FF] text-slate-300 active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
+              className={`aspect-square border hover:bg-[#0052FF]/20 active:bg-[#0052FF] active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md transition-colors ${
+                isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-600 shadow-sm'
+              }`}
             >
               <ArrowBigRight size={24} />
             </button>
@@ -922,7 +997,9 @@ export default function MazeBoard({
             <div></div>
             <button
               onClick={() => movePlayer(0, 1)}
-              className="aspect-square bg-slate-900/60 border border-slate-800 hover:bg-[#0052FF]/20 active:bg-[#0052FF] text-slate-300 active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md"
+              className={`aspect-square border hover:bg-[#0052FF]/20 active:bg-[#0052FF] active:text-white rounded-xl flex items-center justify-center cursor-pointer touch-manipulation shadow-md transition-colors ${
+                isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-600 shadow-sm'
+              }`}
             >
               <ArrowBigDown size={24} />
             </button>
@@ -934,64 +1011,81 @@ export default function MazeBoard({
       {/* RIGHT COLUMN: Statistics Dashboard & Info */}
       <div className="lg:col-span-4 flex flex-col gap-4">
         {/* Profile Card */}
-        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl shadow-md backdrop-blur-sm">
+        <div className={`p-5 rounded-2xl shadow-md backdrop-blur-sm border transition-all duration-300 ${
+          isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-md shadow-blue-500/5'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#0052FF]/10 rounded-full border border-[#0052FF]/20 flex items-center justify-center font-display font-bold text-blue-400">
+            <div className={`w-10 h-10 rounded-full border flex items-center justify-center font-display font-bold ${
+              isDark ? 'bg-[#0052FF]/10 border-[#0052FF]/20 text-blue-400' : 'bg-blue-100 border-blue-200 text-[#0052FF]'
+            }`}>
               {playerName.slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-sm font-display font-bold text-slate-200">{playerName}</h2>
-              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Base Network Builder</p>
+              <h2 className={`text-sm font-display font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{playerName}</h2>
+              <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">{translations[lang].mazeboard.profile_title}</p>
             </div>
           </div>
 
-          <div className="mt-4 border-t border-slate-800/60 pt-4 flex flex-col gap-2">
+          <div className={`mt-4 border-t pt-4 flex flex-col gap-2 ${isDark ? 'border-slate-800/60' : 'border-slate-100'}`}>
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-500">NOMOR BLOK</span>
-              <span className="text-slate-300 font-semibold">#{blockHeight}</span>
+              <span className="text-slate-500">{translations[lang].mazeboard.block_num_label}</span>
+              <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>#{blockHeight}</span>
             </div>
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-500">STABILITAS L2</span>
-              <span className="text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                OPTIMAL (100%)
+              <span className="text-slate-500">{translations[lang].mazeboard.stability_label}</span>
+              <span className="text-emerald-500 flex items-center gap-1 font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                {translations[lang].mazeboard.stability_val}
               </span>
             </div>
           </div>
         </div>
 
         {/* Transaction Telemetry Stats */}
-        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl shadow-md backdrop-blur-sm">
-          <h3 className="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+        <div className={`p-5 rounded-2xl shadow-md backdrop-blur-sm border transition-all duration-300 ${
+          isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-md shadow-blue-500/5'
+        }`}>
+          <h3 className={`text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-1.5 ${
+            isDark ? 'text-slate-400' : 'text-slate-700 font-bold'
+          }`}>
             <Cpu size={12} className="text-[#0052FF]" />
-            TELEMETRI TRANSAKSI
+            {translations[lang].mazeboard.telemetry_title}
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
             {/* Live Timer */}
-            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-              <span className="block text-[10px] font-mono text-slate-500 uppercase">Waktu Konfirmasi</span>
-              <span className="text-lg font-mono font-bold text-white tracking-tight">{stats.timeElapsed.toFixed(2)}s</span>
+            <div className={`p-3 rounded-xl border transition-colors duration-300 ${
+              isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-inner'
+            }`}>
+              <span className="block text-[10px] font-mono text-slate-500 uppercase">{translations[lang].mazeboard.time_elapsed_label}</span>
+              <span className={`text-lg font-mono font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{stats.timeElapsed.toFixed(2)}s</span>
             </div>
 
             {/* Simulated Live Gas */}
-            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-              <span className="block text-[10px] font-mono text-slate-500 uppercase">Gas Fee (Gwei)</span>
-              <span className="text-lg font-mono font-bold text-emerald-400 tracking-tight">
+            <div className={`p-3 rounded-xl border transition-colors duration-300 ${
+              isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-amber-50 border-amber-200 shadow-inner'
+            }`}>
+              {/* Highlight Gwei in Yellow border/accent for beautiful light theme decoration! */}
+              <span className="block text-[10px] font-mono text-amber-600/80 uppercase font-bold">{translations[lang].mazeboard.gas_fee_label}</span>
+              <span className={`text-lg font-mono font-bold tracking-tight text-emerald-600`}>
                 {Math.max(1, Math.round(stats.gasCost * 1000))} Gwei
               </span>
             </div>
 
             {/* Total Moves */}
-            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-              <span className="block text-[10px] font-mono text-slate-500 uppercase">Data Diproses</span>
-              <span className="text-sm font-mono font-bold text-slate-300">{stats.transactionsMade} hops</span>
+            <div className={`p-3 rounded-xl border transition-colors duration-300 ${
+              isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-inner'
+            }`}>
+              <span className="block text-[10px] font-mono text-slate-500 uppercase">{translations[lang].mazeboard.data_processed_label}</span>
+              <span className={`text-sm font-mono font-bold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>{stats.transactionsMade} hops</span>
             </div>
 
             {/* TPS estimation */}
-            <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
-              <span className="block text-[10px] font-mono text-slate-500 uppercase">TPS Estimasi</span>
-              <span className="text-sm font-mono font-bold text-blue-400">
+            <div className={`p-3 rounded-xl border transition-colors duration-300 ${
+              isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200 shadow-inner'
+            }`}>
+              <span className="block text-[10px] font-mono text-slate-500 uppercase">{translations[lang].mazeboard.tps_est_label}</span>
+              <span className="text-sm font-mono font-extrabold text-blue-500">
                 {stats.transactionsMade === 0
                   ? '0.0'
                   : ((cols * rows * 120) / Math.max(0.5, stats.timeElapsed)).toLocaleString(undefined, { maximumFractionDigits: 1 })}
@@ -1001,24 +1095,34 @@ export default function MazeBoard({
         </div>
 
         {/* Powerups & Validator Token */}
-        <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-2xl shadow-md backdrop-blur-sm">
-          <h3 className="text-xs font-mono text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+        <div className={`p-5 rounded-2xl shadow-md backdrop-blur-sm border transition-all duration-300 ${
+          isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-md shadow-blue-500/5'
+        }`}>
+          <h3 className={`text-xs font-mono uppercase tracking-widest mb-3 flex items-center gap-1.5 ${
+            isDark ? 'text-slate-400' : 'text-slate-700 font-bold'
+          }`}>
             <ShieldCheck size={12} className="text-[#0052FF]" />
-            VALIDATOR BYPASS KEY
+            {translations[lang].mazeboard.bypass_title}
           </h3>
 
-          <p className="text-xs text-slate-400 leading-relaxed mb-4">
-            Gunakan Validator Bypass Key untuk mendobrak dinding firewall di labirin jika Anda terjebak.
+          <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+            {translations[lang].mazeboard.bypass_desc}
           </p>
 
-          <div className="flex items-center justify-between bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+          <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors duration-300 ${
+            isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-amber-50/70 border-amber-200'
+          }`}>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#0052FF]/10 text-[#0052FF] flex items-center justify-center border border-[#0052FF]/20">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
+                isDark 
+                  ? 'bg-[#0052FF]/10 text-[#0052FF] border-[#0052FF]/20' 
+                  : 'bg-amber-100 text-amber-600 border-amber-300 shadow-inner'
+              }`}>
                 <ShieldCheck size={16} />
               </div>
               <div>
-                <span className="block text-[10px] font-mono text-slate-500 uppercase">Tersedia</span>
-                <span className="text-sm font-mono font-bold text-slate-200">{stats.validatorTokens} Tokens</span>
+                <span className="block text-[10px] font-mono text-slate-500 uppercase">{translations[lang].mazeboard.bypass_available}</span>
+                <span className={`text-sm font-mono font-bold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{stats.validatorTokens} Tokens</span>
               </div>
             </div>
 
@@ -1027,29 +1131,37 @@ export default function MazeBoard({
               disabled={stats.validatorTokens === 0 || stats.isNoclipped || hasWon || autoSolving}
               className={`px-3 py-1.5 rounded-lg text-xs font-display font-semibold transition cursor-pointer flex items-center gap-1 ${
                 stats.isNoclipped
-                  ? 'bg-amber-600 text-white animate-pulse'
-                  : 'bg-[#0052FF] hover:bg-[#0042cc] disabled:opacity-40 text-white'
+                  ? 'bg-amber-500 text-white animate-pulse shadow-md'
+                  : 'bg-[#0052FF] hover:bg-[#0042cc] disabled:opacity-40 text-white shadow-sm'
               }`}
             >
-              {stats.isNoclipped ? 'Firewall Dobrak Aktif!' : 'Gunakan Bypass'}
+              {stats.isNoclipped ? translations[lang].mazeboard.bypass_active : translations[lang].mazeboard.bypass_use}
             </button>
           </div>
         </div>
 
         {/* Tech Corner Info */}
-        <div className="bg-slate-900/25 border border-slate-800/50 p-4 rounded-xl text-xs text-slate-400 flex gap-2.5 items-start leading-relaxed">
+        <div className={`p-4 rounded-xl text-xs flex gap-2.5 items-start leading-relaxed border transition-all duration-300 ${
+          isDark 
+            ? 'bg-slate-900/25 border-slate-800/50 text-slate-400' 
+            : 'bg-blue-50/80 border-blue-100 text-slate-600 shadow-sm'
+        }`}>
           <Info size={16} className="text-blue-500 flex-shrink-0 mt-0.5" />
           <div>
-            <strong className="text-slate-300 font-display">Mengapa Base Chain?</strong> Base dikembangkan oleh Coinbase di atas OP Stack untuk menghasilkan skalabilitas Ethereum L2 yang aman, ramah biaya gas (~$0.01 per tx), dan waktu konfirmasi 2.0 detik yang super kilat!
+            <strong className={`font-display ${isDark ? 'text-slate-300' : 'text-slate-800 font-bold'}`}>{translations[lang].mazeboard.why_base_title}</strong> {translations[lang].mazeboard.why_base_desc}
           </div>
         </div>
 
         {/* Back Button */}
         <button
           onClick={() => { sound.playMove(); onBackToMenu(); }}
-          className="w-full bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-300 font-display font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer"
+          className={`w-full font-display font-semibold py-2.5 rounded-xl text-xs transition cursor-pointer border ${
+            isDark 
+              ? 'bg-slate-900/60 hover:bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-300' 
+              : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-800 shadow-sm'
+          }`}
         >
-          Kembali ke Menu Utama
+          {translations[lang].mazeboard.back_to_menu}
         </button>
       </div>
     </div>
