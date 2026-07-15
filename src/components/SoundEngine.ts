@@ -9,9 +9,42 @@ class SoundEngine {
   private delayGain: GainNode | null = null;
   private audio: HTMLAudioElement | null = null;
   private isAudioPlaying: boolean = false;
+  private hasInteracted: boolean = false;
 
   constructor() {
     // Lazy initialisation to prevent audio playing warnings before interaction
+    this.setupInteractionListener();
+  }
+
+  private setupInteractionListener() {
+    if (typeof window === 'undefined') return;
+
+    const startAudioOnInteraction = () => {
+      if (this.hasInteracted) return;
+      this.hasInteracted = true;
+
+      // Force initialize AudioContext and resume
+      this.init();
+
+      // If music is enabled and not playing, try starting it
+      if (this.musicEnabled && !this.isAudioPlaying) {
+        this.tryPlayMP3();
+      }
+
+      cleanup();
+    };
+
+    const cleanup = () => {
+      window.removeEventListener('click', startAudioOnInteraction);
+      window.removeEventListener('keydown', startAudioOnInteraction);
+      window.removeEventListener('touchstart', startAudioOnInteraction);
+      window.removeEventListener('mousedown', startAudioOnInteraction);
+    };
+
+    window.addEventListener('click', startAudioOnInteraction);
+    window.addEventListener('keydown', startAudioOnInteraction);
+    window.addEventListener('touchstart', startAudioOnInteraction);
+    window.addEventListener('mousedown', startAudioOnInteraction);
   }
 
   private init() {
