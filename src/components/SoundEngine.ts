@@ -4,6 +4,7 @@ class SoundEngine {
   private muted: boolean = false;
   private musicEnabled: boolean = false;
   private musicInterval: any = null;
+  private fadeInterval: any = null;
   private currentStep: number = 0;
   private delayNode: DelayNode | null = null;
   private delayGain: GainNode | null = null;
@@ -93,10 +94,12 @@ class SoundEngine {
     if (enabled) {
       this.tryPlayMP3();
     } else {
-      if (this.audio) {
-        this.audio.pause();
-      }
       this.isAudioPlaying = false;
+      this.fadeAudio(0.0, 1000, () => {
+        if (!this.musicEnabled && this.audio) {
+          this.audio.pause();
+        }
+      });
     }
   }
 
@@ -104,12 +107,55 @@ class SoundEngine {
     return this.musicEnabled;
   }
 
+  private fadeAudio(target: number, duration: number, callback?: () => void) {
+    if (!this.audio) {
+      if (callback) callback();
+      return;
+    }
+
+    if (this.fadeInterval) {
+      clearInterval(this.fadeInterval);
+      this.fadeInterval = null;
+    }
+
+    const steps = 25; // 25 steps for a highly smooth cross-fade
+    const stepTime = duration / steps;
+    const startVolume = this.audio.volume;
+    const volumeChange = target - startVolume;
+    let currentStep = 0;
+
+    this.fadeInterval = setInterval(() => {
+      currentStep++;
+      if (this.audio) {
+        const nextVolume = Math.max(0, Math.min(1, startVolume + (volumeChange * (currentStep / steps))));
+        this.audio.volume = nextVolume;
+      }
+
+      if (currentStep >= steps) {
+        clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
+        if (this.audio) {
+          this.audio.volume = target;
+        }
+        if (callback) callback();
+      }
+    }, stepTime);
+  }
+
   private tryPlayMP3() {
     if (this.audio) {
       this.audio.muted = this.muted;
+      
+      if (this.isAudioPlaying) {
+        this.fadeAudio(1.0, 1000);
+        return;
+      }
+
+      this.audio.volume = 0; // Start at 0 volume for smooth fade-in
       this.audio.play()
         .then(() => {
           this.isAudioPlaying = true;
+          this.fadeAudio(1.0, 1000); // Fade in to 1.0 over 1 second
         })
         .catch((e) => {
           console.log("MP3 play failed:", e);
@@ -140,10 +186,12 @@ class SoundEngine {
           audio.pause();
           return;
         }
+        audio.volume = 0; // Start at 0 volume for smooth fade-in
         audio.play()
           .then(() => {
             this.audio = audio;
             this.isAudioPlaying = true;
+            this.fadeAudio(1.0, 1000); // Fade in to 1.0 over 1 second
           })
           .catch((err) => {
             console.warn("Autoplay blocked or failed for", currentPath, err);
