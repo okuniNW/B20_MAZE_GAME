@@ -11,6 +11,9 @@ class SoundEngine {
   private audio: HTMLAudioElement | null = null;
   private isAudioPlaying: boolean = false;
   private hasInteracted: boolean = false;
+  private ambientOscs: OscillatorNode[] = [];
+  private ambientGain: GainNode | null = null;
+  private isAmbientPlaying: boolean = false;
 
   constructor() {
     // Lazy initialisation to prevent audio playing warnings before interaction
@@ -78,10 +81,106 @@ class SoundEngine {
     }
   }
 
+  private startProceduralAmbient() {
+    if (this.isAmbientPlaying || this.muted || !this.musicEnabled) return;
+    this.init();
+    if (!this.ctx) return;
+
+    this.isAmbientPlaying = true;
+    
+    try {
+      // Create an ambient main gain node
+      this.ambientGain = this.ctx.createGain();
+      this.ambientGain.gain.setValueAtTime(0.0, this.ctx.currentTime); // start at 0 for fade-in
+
+      // 1. Warm base drone (low-pass filtered sawtooth + triangle detuned)
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(250, this.ctx.currentTime);
+
+      const freqs = [110, 165, 220, 275]; // A2, E3, A3, C#4 (Warm major-ish chord)
+      
+      this.ambientOscs = [];
+      
+      freqs.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+        
+        // Alternate waveforms for richness
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        
+        // Detune slightly for chorus effect
+        osc.detune.setValueAtTime((idx * 4) - 6, this.ctx.currentTime);
+        
+        // Soft, unequal volume for each partial
+        const vol = 0.05 / (idx + 1);
+        oscGain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        
+        osc.connect(oscGain);
+        oscGain.connect(filter);
+        
+        osc.start();
+        this.ambientOscs.push(osc);
+      });
+
+      // Connect to main ambient gain
+      filter.connect(this.ambientGain);
+      
+      // Optionally connect to delay node if initialized
+      if (this.delayNode && this.ambientGain) {
+        this.ambientGain.connect(this.delayNode);
+      } else if (this.ambientGain) {
+        this.ambientGain.connect(this.ctx.destination);
+      }
+
+      // Fade in the ambient music smoothly over 2 seconds
+      this.ambientGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 2.0);
+    } catch (e) {
+      console.warn("Failed to start procedural ambient synth:", e);
+      this.isAmbientPlaying = false;
+    }
+  }
+
+  private stopProceduralAmbient() {
+    if (!this.isAmbientPlaying) return;
+    this.isAmbientPlaying = false;
+    
+    const now = this.ctx ? this.ctx.currentTime : 0;
+    
+    if (this.ambientGain && this.ctx) {
+      try {
+        this.ambientGain.gain.cancelScheduledValues(now);
+        this.ambientGain.gain.setValueAtTime(this.ambientGain.gain.value, now);
+        this.ambientGain.gain.linearRampToValueAtTime(0.0, now + 1.0);
+      } catch (e) {
+        console.warn("Failed to smoothly stop ambient gains:", e);
+      }
+    }
+    
+    setTimeout(() => {
+      if (!this.isAmbientPlaying) {
+        this.ambientOscs.forEach(osc => {
+          try {
+            osc.stop();
+          } catch(e) {}
+        });
+        this.ambientOscs = [];
+        this.ambientGain = null;
+      }
+    }, 1100);
+  }
+
   setMute(isMuted: boolean) {
     this.muted = isMuted;
     if (this.audio) {
       this.audio.muted = isMuted;
+    }
+    if (isMuted) {
+      this.stopProceduralAmbient();
+    } else if (this.musicEnabled) {
+      this.tryPlayMP3();
     }
   }
 
@@ -95,6 +194,7 @@ class SoundEngine {
       this.tryPlayMP3();
     } else {
       this.isAudioPlaying = false;
+      this.stopProceduralAmbient(); // Stop ambient if running
       this.fadeAudio(0.0, 1000, () => {
         if (!this.musicEnabled && this.audio) {
           this.audio.pause();
@@ -170,8 +270,9 @@ class SoundEngine {
 
     const tryNextPath = () => {
       if (pathIndex >= possiblePaths.length) {
-        console.warn("All MP3 paths failed. Please upload a music.mp3 file to the public directory.");
+        console.warn("All MP3 paths failed. Starting gorgeous procedural synth ambient music fallback...");
         this.isAudioPlaying = false;
+        this.startProceduralAmbient();
         return;
       }
 

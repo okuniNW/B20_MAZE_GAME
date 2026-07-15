@@ -5,22 +5,17 @@ import {
   VolumeX,
   Music,
   Trophy,
-  Activity,
-  Cpu,
   Layers,
-  Sparkles,
-  Github,
-  Wallet,
-  Coins,
-  ShieldCheck,
-  TrendingUp,
-  ExternalLink,
   Menu,
   ChevronDown,
-  Sun,
+  X,
+  ChevronRight,
+  HelpCircle,
+  History,
+  TrendingUp,
+  Copy,
   Moon,
-  Globe,
-  Key
+  Sun
 } from 'lucide-react';
 import { Difficulty, ScoreEntry } from './types';
 import Onboarding from './components/Onboarding';
@@ -28,6 +23,7 @@ import MazeBoard from './components/MazeBoard';
 import Leaderboard from './components/Leaderboard';
 import { sound } from './components/SoundEngine';
 import { Language, translations } from './lib/i18n';
+import ClipboardPanel from './components/ClipboardPanel';
 
 export default function App() {
   const [screen, setScreen] = useState<'home' | 'playing' | 'leaderboard'>('home');
@@ -43,10 +39,8 @@ export default function App() {
     return localStorage.getItem('base_maze_music_on') !== 'false';
   });
   const [tickerIndex, setTickerIndex] = useState(0);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('base_maze_theme') as 'light' | 'dark') || 'light';
-  });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'none' | 'features' | 'faq' | 'updates' | 'clipboard' | 'pricing'>('none');
   const [gameMode, setGameMode] = useState<'classic' | 'campaign'>('campaign');
   const [campaignLevel, setCampaignLevel] = useState<number>(1);
   const [unlockedLevel, setUnlockedLevel] = useState<number>(() => {
@@ -57,9 +51,22 @@ export default function App() {
     return Number(localStorage.getItem('base_maze_special_tokens') || '1');
   });
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('base_maze_dark_mode') === 'true';
+  });
+
   useEffect(() => {
     localStorage.setItem('base_maze_special_tokens', String(specialTokens));
   }, [specialTokens]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('base_maze_dark_mode', String(isDarkMode));
+  }, [isDarkMode]);
 
   // Sync music state with SoundEngine
   useEffect(() => {
@@ -116,342 +123,493 @@ export default function App() {
     setScreen('leaderboard');
   };
 
-  const isDark = theme === 'dark';
-
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 selection:bg-[#0052FF]/30 ${
-      isDark ? 'bg-[#020617] text-slate-100 selection:text-blue-200' : 'bg-slate-50 text-slate-900 selection:text-blue-800'
-    }`}>
+    <div className="min-h-screen flex flex-col font-sans transition-colors duration-300 selection:bg-cerulean-sky/20 text-deep-navy cora-canvas">
       
-      {/* HEADER SECTION */}
-      <header className={`h-16 border-b sticky top-0 z-50 backdrop-blur-md transition-colors duration-300 ${
-        isDark ? 'border-slate-800 bg-[#020617]/80 text-slate-100' : 'border-slate-200 bg-white/80 text-slate-900 shadow-sm'
-      }`}>
-        <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
+      {/* FLOATING HEADER PILL (COOLDOCK / IMAGE 2 STYLE) */}
+      <div className="sticky top-0 z-50 w-full px-4 pt-4 pb-2">
+        <header className="relative mx-auto max-w-2xl bg-white/85 dark:bg-[#0a141f]/85 backdrop-blur-lg rounded-full border border-deep-navy/5 dark:border-white/10 shadow-[0_12px_40px_rgba(6,29,51,0.08)] px-5 py-3 flex items-center justify-between transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]">
           
-          {/* DESKTOP HEADER (hidden on mobile, visible on md+) */}
-          <div className="hidden md:flex items-center justify-between w-full h-full">
+          {/* Logo & Brand title */}
+          <div 
+            onClick={() => { sound.playMove(); setScreen('home'); }}
+            className="flex items-center gap-3 cursor-pointer group select-none"
+          >
+            {/* Original minimalist circular TOTS badge */}
+            <div className="relative w-8 h-8 rounded-full border border-warm-red/40 bg-cloud-white flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:rotate-12 flex-shrink-0">
+              <span className="font-serif italic font-bold text-xs text-deep-navy">T</span>
+              <span className="font-serif italic font-bold text-[8px] text-warm-red relative -top-1">S</span>
+            </div>
             
-            {/* Logo & Brand title */}
-            <div 
-              onClick={() => { sound.playMove(); setScreen('home'); }}
-              className="flex items-center gap-2.5 cursor-pointer group"
-            >
-              {/* Minimal Base blue/white circle logo */}
-              <div className="relative w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center border-2 border-white shadow-md transition-transform duration-300 group-hover:rotate-12">
-                <div className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-[#0052FF] rounded-full"></div>
-                </div>
-              </div>
-
-              <div>
-                <span className="font-display font-black text-sm tracking-tight flex items-center gap-1.5">
-                  {translations[lang].header.title}
-                </span>
-                <span className="block text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none">
-                  {translations[lang].header.subtitle}
-                </span>
-              </div>
-            </div>
-
-            {/* Elegant Dark Header Info Badges & controls */}
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border ${
-                isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
-              }`}>
-                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
-                <span className={`text-[10px] font-mono uppercase tracking-widest ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  {translations[lang].header.base_mainnet}
-                </span>
-              </div>
-
-              {/* Quick utility controls */}
-              <div className="flex items-center gap-2">
-                {/* Language Selector */}
-                <div className={`flex items-center border rounded-lg p-0.5 gap-0.5 mr-1 ${
-                  isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
-                }`}>
-                  {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => {
-                        sound.playMove();
-                        setLang(l);
-                        localStorage.setItem('base_maze_lang', l);
-                      }}
-                      className={`px-1.5 py-1 rounded text-[9px] font-mono uppercase font-black transition-all cursor-pointer ${
-                        lang === l
-                          ? 'bg-[#0052FF] text-white shadow-sm'
-                          : isDark
-                            ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                      }`}
-                      title={l === 'en' ? 'English' : l === 'id' ? 'Bahasa Indonesia' : l === 'zh' ? '中文' : 'Français'}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Leaderboard */}
-                <button
-                  onClick={() => {
-                    sound.playMove();
-                    setScreen(screen === 'leaderboard' ? 'home' : 'leaderboard');
-                  }}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-display font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                    screen === 'leaderboard'
-                      ? 'bg-[#0052FF] hover:bg-[#0042cc] border border-[#0052FF] text-white shadow-lg shadow-[#0052FF]/20'
-                      : isDark
-                        ? 'bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
-                  }`}
-                >
-                  <Trophy size={14} />
-                  <span>{translations[lang].header.leaderboard}</span>
-                </button>
-
-                {/* Theme Toggle */}
-                <button
-                  onClick={() => {
-                    sound.playPowerup();
-                    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                    setTheme(nextTheme);
-                    localStorage.setItem('base_maze_theme', nextTheme);
-                  }}
-                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
-                    isDark
-                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
-                  }`}
-                  title={isDark ? translations[lang].header.theme_light : translations[lang].header.theme_dark}
-                >
-                  {isDark ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
-                </button>
-
-                {/* Mute Button */}
-                <button
-                  onClick={handleToggleMute}
-                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
-                    isDark
-                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
-                  }`}
-                  title={isMuted ? translations[lang].header.unmute : translations[lang].header.mute}
-                >
-                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                </button>
-
-                {/* Music Toggle */}
-                <button
-                  onClick={handleToggleMusic}
-                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
-                    isDark
-                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
-                  } ${isMusicOn ? 'text-[#0052FF] border-[#0052FF]/30 bg-[#0052FF]/5' : ''}`}
-                  title={isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}
-                >
-                  <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
-                </button>
-
-                {isMusicOn && (
-                  <span className="hidden lg:inline-flex items-center gap-1.5 text-[9px] font-mono font-bold tracking-wider text-[#0052FF] bg-[#0052FF]/5 border border-[#0052FF]/15 px-2.5 py-1 rounded-lg">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] animate-ping"></span>
-                    FC TOTS THEME
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* MOBILE HEADER (visible on mobile, hidden on md+) */}
-          <div className="flex md:hidden w-full items-center justify-between">
-            {/* Logo */}
-            <div 
-              onClick={() => { sound.playMove(); setScreen('home'); }}
-              className="flex items-center cursor-pointer group"
-            >
-              <div className="relative w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center border-2 border-white shadow-md transition-transform duration-300 group-hover:rotate-12">
-                <div className="w-4.5 h-4.5 bg-white rounded-full flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-[#0052FF] rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Name/Title */}
-            <div 
-              className="flex flex-col items-center justify-center flex-grow mx-2 text-center select-none"
-            >
-              <span className={`font-display font-black text-xs tracking-tight leading-tight ${
-                isDark ? 'text-white' : 'text-slate-900'
-              }`}>
+            <div className="flex flex-col text-left">
+              <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
                 {translations[lang].header.title}
               </span>
-              <span className="text-[7px] font-mono text-slate-500 uppercase tracking-widest leading-none mt-0.5">
+              <span className="block text-[8px] font-mono text-deep-navy/50 dark:text-slate-400 uppercase tracking-widest leading-none mt-0.5">
                 {translations[lang].header.subtitle}
               </span>
             </div>
-
-            {/* Dropdown Menu on Right */}
-            <div className="relative">
-              <button
-                onClick={() => { sound.playMove(); setIsMenuOpen(!isMenuOpen); }}
-                className={`p-2 rounded-xl border flex items-center justify-center transition cursor-pointer ${
-                  isDark 
-                    ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white' 
-                    : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 shadow-sm'
-                }`}
-                aria-label="Toggle menu"
-              >
-                <Menu size={16} />
-              </button>
-
-              <AnimatePresence>
-                {isMenuOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setIsMenuOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className={`absolute right-0 mt-2 w-60 rounded-2xl border p-4 shadow-xl z-50 flex flex-col gap-3 ${
-                        isDark 
-                          ? 'bg-slate-950 border-slate-800 text-slate-200' 
-                          : 'bg-white border-slate-200 text-slate-800'
-                      }`}
-                    >
-                      {/* Language selection header */}
-                      <div>
-                        <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
-                          {lang === 'id' ? 'Bahasa / Language' : 'Language / Bahasa'}
-                        </span>
-                        <div className={`flex items-center w-full border rounded-xl p-0.5 gap-0.5 ${
-                          isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
-                        }`}>
-                          {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
-                            <button
-                              key={l}
-                              onClick={() => {
-                                sound.playMove();
-                                setLang(l);
-                                localStorage.setItem('base_maze_lang', l);
-                                setIsMenuOpen(false);
-                              }}
-                              className={`flex-1 py-1 rounded text-[10px] font-mono uppercase font-black transition-all cursor-pointer ${
-                                lang === l
-                                  ? 'bg-[#0052FF] text-white shadow-sm'
-                                  : isDark
-                                    ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                              }`}
-                            >
-                              {l}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className={`h-px ${isDark ? 'bg-slate-800/60' : 'bg-slate-200/80'}`} />
-
-                      {/* Leaderboard button */}
-                      <button
-                        onClick={() => {
-                          sound.playMove();
-                          setScreen(screen === 'leaderboard' ? 'home' : 'leaderboard');
-                          setIsMenuOpen(false);
-                        }}
-                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center justify-between border transition cursor-pointer ${
-                          screen === 'leaderboard'
-                            ? 'bg-[#0052FF] border-[#0052FF] text-white shadow-md'
-                            : isDark
-                              ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                              : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Trophy size={14} />
-                          {translations[lang].header.leaderboard}
-                        </span>
-                        <ChevronDown size={14} className="opacity-40 -rotate-90" />
-                      </button>
-
-                      {/* Sound Toggle */}
-                      <button
-                        onClick={() => {
-                          handleToggleMute();
-                          setIsMenuOpen(false);
-                        }}
-                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
-                          isDark
-                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
-                        }`}
-                      >
-                        {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                        <span>
-                          {isMuted ? translations[lang].header.unmute : translations[lang].header.mute}
-                        </span>
-                      </button>
-
-                      {/* Music Toggle */}
-                      <button
-                        onClick={() => {
-                          handleToggleMusic();
-                          setIsMenuOpen(false);
-                        }}
-                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
-                          isDark
-                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
-                        } ${isMusicOn ? 'border-[#0052FF]/30 text-[#0052FF] dark:text-[#0052FF] bg-[#0052FF]/5' : ''}`}
-                      >
-                        <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
-                        <span className="flex-grow text-left">
-                          {isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}
-                        </span>
-                        {isMusicOn && (
-                          <span className="text-[9px] font-mono bg-[#0052FF]/10 text-[#0052FF] px-1.5 py-0.5 rounded font-bold animate-pulse">
-                            TOTS ACTIVE
-                          </span>
-                        )}
-                      </button>
-
-                      {/* Light/Dark mode toggle */}
-                      <button
-                        onClick={() => {
-                          sound.playPowerup();
-                          const nextTheme = theme === 'dark' ? 'light' : 'dark';
-                          setTheme(nextTheme);
-                          localStorage.setItem('base_maze_theme', nextTheme);
-                          setIsMenuOpen(false);
-                        }}
-                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
-                          isDark
-                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
-                        }`}
-                      >
-                        {isDark ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} className="text-indigo-600" />}
-                        <span>
-                          {isDark ? translations[lang].header.theme_light : translations[lang].header.theme_dark}
-                        </span>
-                      </button>
-
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-
           </div>
 
-        </div>
-      </header>
+          {/* Quick Stats on Desktop / Inline details */}
+          <div className="hidden sm:flex items-center gap-3 select-none">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-deep-navy/5 bg-cloud-white/40 dark:bg-slate-800/40 text-[9px] font-mono uppercase tracking-wider text-deep-navy/60 dark:text-slate-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-warm-red animate-pulse"></span>
+              {translations[lang].header.base_mainnet}
+            </div>
+            {isMusicOn && (
+              <span className="flex items-center gap-1 text-[9px] font-mono font-bold tracking-wider text-cerulean-sky bg-cerulean-sky/5 border border-cerulean-sky/10 px-2.5 py-1 rounded-full">
+                <Music size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                AMBIENT
+              </span>
+            )}
+          </div>
+
+          {/* Menu Button with Hamburger Menu Icon */}
+          <button
+            onClick={() => { sound.playMove(); setIsMenuOpen(!isMenuOpen); }}
+            className="p-2.5 rounded-full border border-deep-navy/5 bg-deep-navy/5 hover:bg-deep-navy/10 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200 flex items-center justify-center cursor-pointer select-none"
+            aria-label="Toggle menu"
+          >
+            <Menu size={16} />
+          </button>
+        </header>
+      </div>
+
+      {/* FULL SCREEN OVERLAY MENU CARD */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Frosted Glass Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="absolute inset-0 bg-[#061d33]/40 backdrop-blur-md"
+            />
+
+            {/* Menu Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="relative w-full max-w-sm bg-white dark:bg-[#0a141f] rounded-[32px] shadow-[0_25px_60px_rgba(6,29,51,0.18)] flex flex-col p-6 font-sans border border-deep-navy/5 dark:border-white/10 z-10 max-h-[calc(100vh-2.5rem)] overflow-y-auto scrollbar-none text-left"
+            >
+              {/* Header inside Menu Card */}
+              <div className="flex items-center justify-between mb-6 select-none">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative w-8 h-8 rounded-full border border-warm-red/40 bg-cloud-white flex items-center justify-center shadow-sm">
+                    <span className="font-serif italic font-bold text-xs text-deep-navy">T</span>
+                    <span className="font-serif italic font-bold text-[8px] text-warm-red relative -top-1">S</span>
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
+                      {translations[lang].header.title}
+                    </span>
+                    <span className="block text-[8px] font-mono text-deep-navy/50 dark:text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+                      {translations[lang].header.subtitle}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { sound.playMove(); setIsMenuOpen(false); }}
+                  className="p-1.5 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy dark:text-slate-400 dark:hover:text-slate-200 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Menu items */}
+              <div className="flex flex-col gap-4 mb-6 text-left">
+                {/* LANGUAGE SECTION */}
+                <div className="flex flex-col select-none">
+                  <div className="text-[10px] font-mono tracking-widest text-deep-navy/40 dark:text-slate-400 uppercase mb-2">
+                    LANGUAGE / BAHASA
+                  </div>
+                  <div className="grid grid-cols-4 bg-deep-navy/5 dark:bg-slate-800/60 p-1 rounded-[16px]">
+                    {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => {
+                          sound.playMove();
+                          setLang(l);
+                          localStorage.setItem('base_maze_lang', l);
+                        }}
+                        className={`py-2 text-xs font-bold rounded-[12px] transition-all cursor-pointer ${
+                          lang === l
+                            ? 'bg-[#005cff] text-white shadow-sm'
+                            : 'text-deep-navy/60 dark:text-slate-400 hover:text-deep-navy hover:bg-deep-navy/5 dark:hover:bg-slate-700/50'
+                        }`}
+                      >
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Divider line */}
+                <div className="h-px bg-deep-navy/5 dark:bg-white/10 my-2 w-full" />
+
+                {/* Leaderboard option */}
+                <button
+                  onClick={() => {
+                    sound.playMove();
+                    setScreen('leaderboard');
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center justify-between font-sans font-medium text-base transition-all duration-200 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <Trophy className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                    <span>{translations[lang].header.leaderboard}</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-deep-navy/30 dark:text-slate-500" />
+                </button>
+
+                {/* Mute sounds option */}
+                <button
+                  onClick={() => {
+                    handleToggleMute();
+                  }}
+                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
+                >
+                  {isMuted ? (
+                    <>
+                      <VolumeX className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                      <span>{translations[lang].header.unmute}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                      <span>{translations[lang].header.mute}</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Play background music option */}
+                <button
+                  onClick={() => {
+                    handleToggleMusic();
+                  }}
+                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
+                >
+                  <Music className={`w-5 h-5 text-deep-navy/70 dark:text-slate-300 ${isMusicOn ? 'animate-spin' : ''}`} style={isMusicOn ? { animationDuration: '4s' } : undefined} />
+                  <span>{isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}</span>
+                </button>
+
+                {/* Dark Mode option */}
+                <button
+                  onClick={() => {
+                    sound.playMove();
+                    setIsDarkMode(!isDarkMode);
+                  }}
+                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
+                >
+                  {isDarkMode ? (
+                    <>
+                      <Sun className="w-5 h-5 text-amber-500 animate-pulse" />
+                      <span>{translations[lang].header.theme_light}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-5 h-5 text-[#5e43f3]" />
+                      <span>{translations[lang].header.theme_dark}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Bottom Start Journey Action Button */}
+              <button
+                onClick={() => {
+                  sound.playMove();
+                  setIsMenuOpen(false);
+                  const inputEl = document.getElementById('builder-name-input');
+                  if (inputEl) {
+                    inputEl.focus();
+                  }
+                  const boardEl = document.getElementById('maze-board-container');
+                  if (boardEl) {
+                    boardEl.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="w-full bg-black dark:bg-slate-800 hover:bg-black/90 dark:hover:bg-slate-750 active:scale-[0.98] text-white rounded-[20px] py-4 px-5 font-sans font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-all duration-200 cursor-pointer"
+              >
+                <span>Mulai Perjalanan (Start Journey)</span>
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* COOLDOCK SUB-MODALS */}
+      <AnimatePresence>
+        {activeModal === 'features' && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#061d33]/20 backdrop-blur-sm"
+              onClick={() => setActiveModal('none')}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-deep-navy/15 z-10 text-deep-navy font-sans"
+            >
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-deep-navy/5">
+                <h3 className="text-lg font-serif font-light text-deep-navy flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cerulean-sky animate-pulse" />
+                  TOTS Core Features
+                </h3>
+                <button
+                  onClick={() => setActiveModal('none')}
+                  className="p-1 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                <div className="p-3 bg-cloud-white/60 rounded-xl border border-deep-navy/5">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-cerulean-sky font-bold block mb-1">
+                    01 · Procedural Maze Space
+                  </span>
+                  <p className="text-xs text-deep-navy/85 leading-relaxed">
+                    Every level dynamically generates optimized grid networks. Paths are procedurally validated using depth-first search (DFS) with real-time feedback loops.
+                  </p>
+                </div>
+                <div className="p-3 bg-cloud-white/60 rounded-xl border border-deep-navy/5">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-warm-red font-bold block mb-1">
+                    02 · Procedural Audio Synth
+                  </span>
+                  <p className="text-xs text-deep-navy/85 leading-relaxed">
+                    No static wave files! Footsteps, collisions, and validator triggers are generated mathematically using Web Audio API oscillators and linear ramp frequency filters.
+                  </p>
+                </div>
+                <div className="p-3 bg-cloud-white/60 rounded-xl border border-deep-navy/5">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-600 font-bold block mb-1">
+                    03 · Cora UI Aesthetic
+                  </span>
+                  <p className="text-xs text-deep-navy/85 leading-relaxed">
+                    Ditching the chaotic dark slop gradients, Cora UI uses off-white glass, generous spacing, serif display fonts, and physical shadow elevations.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="w-full mt-5 cora-btn-primary py-2.5 rounded-xl text-xs font-bold shadow-sm"
+              >
+                Understood
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {activeModal === 'faq' && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#061d33]/20 backdrop-blur-sm"
+              onClick={() => setActiveModal('none')}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-deep-navy/15 z-10 text-deep-navy font-sans"
+            >
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-deep-navy/5">
+                <h3 className="text-lg font-serif font-light text-deep-navy flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-warm-red animate-pulse" />
+                  Frequently Asked Questions
+                </h3>
+                <button
+                  onClick={() => setActiveModal('none')}
+                  className="p-1 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                <div className="p-3 bg-cloud-white/40 rounded-xl border border-deep-navy/5">
+                  <h4 className="text-xs font-bold text-deep-navy mb-1">How is the score calculated?</h4>
+                  <p className="text-[11px] text-deep-navy/75 leading-relaxed">
+                    Your final Speedrun rating is derived from your total completion time and Transaction-Per-Second (TPS) processing throughput. Faster clears yield higher TPS.
+                  </p>
+                </div>
+                <div className="p-3 bg-cloud-white/40 rounded-xl border border-deep-navy/5">
+                  <h4 className="text-xs font-bold text-deep-navy mb-1">What are special tokens for?</h4>
+                  <p className="text-[11px] text-deep-navy/75 leading-relaxed">
+                    You can gather special tokens hidden in random grid locations. These tokens allow you to solve/validate complex nodes instantly or unlock secret corridors.
+                  </p>
+                </div>
+                <div className="p-3 bg-cloud-white/40 rounded-xl border border-deep-navy/5">
+                  <h4 className="text-xs font-bold text-deep-navy mb-1">How do I mute/unmute the music?</h4>
+                  <p className="text-[11px] text-deep-navy/75 leading-relaxed">
+                    Use the toggles in our beautiful unified Dashboard inside the <strong>Clipboard manager</strong> panel, or directly on the header bar indicators!
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="w-full mt-5 cora-btn-primary py-2.5 rounded-xl text-xs font-bold shadow-sm"
+              >
+                Close FAQ
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {activeModal === 'updates' && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#061d33]/20 backdrop-blur-sm"
+              onClick={() => setActiveModal('none')}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-deep-navy/15 z-10 text-deep-navy font-sans"
+            >
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-deep-navy/5">
+                <h3 className="text-lg font-serif font-light text-deep-navy flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Changelog & Updates
+                </h3>
+                <button
+                  onClick={() => setActiveModal('none')}
+                  className="p-1 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                <div className="relative pl-4 border-l border-deep-navy/10">
+                  <span className="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-cerulean-sky -translate-x-[4px]" />
+                  <span className="text-[10px] font-mono font-bold text-cerulean-sky">v1.1.0 · CURRENT</span>
+                  <h4 className="text-xs font-bold text-deep-navy mt-0.5">Cooldock Premium Header Integration</h4>
+                  <p className="text-[11px] text-deep-navy/70 mt-1">
+                    Re-designed the navigation header into a floating rounded pill. Added the high-end Cooldock glass dropdown menu modal overlay with detailed functional sub-systems.
+                  </p>
+                </div>
+                <div className="relative pl-4 border-l border-deep-navy/10">
+                  <span className="absolute left-0 top-1.5 w-1.5 h-1.5 rounded-full bg-deep-navy/30 -translate-x-[4px]" />
+                  <span className="text-[10px] font-mono font-bold text-deep-navy/40">v1.0.5</span>
+                  <h4 className="text-xs font-bold text-deep-navy mt-0.5">Procedural Audio Enhancement</h4>
+                  <p className="text-[11px] text-deep-navy/70 mt-1">
+                    Engineered the Sound Engine to utilize continuous looping and linear ramps (1s fade) on volume transition to satisfy strict web compliance and smooth client-side audio.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="w-full mt-5 cora-btn-primary py-2.5 rounded-xl text-xs font-bold shadow-sm"
+              >
+                Excellent
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {activeModal === 'pricing' && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#061d33]/20 backdrop-blur-sm"
+              onClick={() => setActiveModal('none')}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-deep-navy/15 z-10 text-deep-navy font-sans"
+            >
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-deep-navy/5">
+                <h3 className="text-lg font-serif font-light text-deep-navy flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  Base Gas & Throughput
+                </h3>
+                <button
+                  onClick={() => setActiveModal('none')}
+                  className="p-1 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <p className="text-xs text-deep-navy/70 leading-relaxed">
+                  Base operates as an ultra-fast L2. Transactions are batched and posted to L1 Ethereum, maintaining high safety at a fraction of the gas pricing.
+                </p>
+                <div className="p-4 bg-[#f8fafc] border border-deep-navy/5 rounded-2xl">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-[10px] font-mono text-deep-navy/50 uppercase tracking-widest font-bold">Gas Consumption Level</span>
+                    <span className="text-xs font-mono font-bold text-amber-600">0.0001 Gwei</span>
+                  </div>
+                  <div className="flex items-end gap-2.5 h-20 pt-2 border-b border-deep-navy/10 select-none">
+                    {/* Elegant mock bars */}
+                    {[20, 35, 15, 60, 45, 80, 25, 90, 40].map((val, idx) => (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+                        <div 
+                          className="w-full bg-cerulean-sky rounded-t-sm transition-all duration-500" 
+                          style={{ height: `${val}%` }} 
+                        />
+                        <span className="text-[8px] font-mono text-deep-navy/40">b{idx+1}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center mt-3 text-[10px] font-mono text-deep-navy/60">
+                    <span>Throughput Limit: 4,000 TPS</span>
+                    <span className="text-cerulean-sky font-bold">99.8% Efficiency</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="w-full mt-5 cora-btn-primary py-2.5 rounded-xl text-xs font-bold shadow-sm"
+              >
+                Done
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {activeModal === 'clipboard' && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#061d33]/20 backdrop-blur-sm"
+              onClick={() => setActiveModal('none')}
+            />
+            <ClipboardPanel
+              playerName={playerName}
+              gameMode={gameMode}
+              unlockedLevel={unlockedLevel}
+              specialTokens={specialTokens}
+              lang={lang}
+              setLang={setLang}
+              isMuted={isMuted}
+              handleToggleMute={handleToggleMute}
+              isMusicOn={isMusicOn}
+              handleToggleMusic={handleToggleMusic}
+              onClose={() => setActiveModal('none')}
+            />
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* MAIN SCREEN ROUTER WITH ANIMATIONS */}
       <main className="flex-grow flex flex-col justify-center py-6">
@@ -467,31 +625,25 @@ export default function App() {
               className="w-full flex flex-col items-center"
             >
               {/* Onboarding Widget with nested builder start form */}
-              <Onboarding onStart={handleStartGame} lang={lang} theme={theme} specialTokens={specialTokens} />
+              <Onboarding onStart={handleStartGame} lang={lang} theme="light" specialTokens={specialTokens} />
 
               {/* LEVEL CONFIGURATION CARDS (Difficulty selector) */}
               <div className="w-full max-w-2xl px-4 mt-2">
-                <div className={`p-6 rounded-2xl shadow-xl backdrop-blur-sm border transition-all duration-300 ${
-                  isDark 
-                    ? 'bg-slate-900/50 border-slate-800' 
-                    : 'bg-white border-slate-200 border-t-4 border-t-amber-400 shadow-lg shadow-blue-500/5'
-                }`}>
-                  <h3 className={`text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-1.5 ${
-                    isDark ? 'text-slate-400' : 'text-slate-600 font-bold'
-                  }`}>
-                    <Layers size={12} className="text-[#0052FF]" />
+                <div className="p-6 rounded-2xl border-t-2 border-t-warm-red cora-desk-card font-sans">
+                  <h3 className="text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-1.5 text-deep-navy/70 font-bold">
+                    <Layers size={12} className="text-cerulean-sky" />
                     {translations[lang].difficulty.choose_structure}
                   </h3>
 
                   {/* MODE TABS */}
-                  <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl mb-4 border border-slate-200/50 dark:border-slate-800/50">
+                  <div className="flex gap-2 p-1 bg-cloud-white border border-deep-navy/10 rounded-xl mb-4">
                     <button
                       type="button"
                       onClick={() => { sound.playMove(); setGameMode('campaign'); }}
-                      className={`flex-1 py-2 text-xs font-display font-bold rounded-lg transition-all cursor-pointer ${
+                      className={`flex-1 py-2 text-xs font-sans font-bold rounded-lg transition-all cursor-pointer ${
                         gameMode === 'campaign'
-                          ? 'bg-[#0052FF] text-white shadow-sm'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          ? 'cora-btn-primary shadow-sm'
+                          : 'text-deep-navy/60 hover:text-deep-navy'
                       }`}
                     >
                       🏆 {translations[lang].difficulty.campaign_tab}
@@ -499,10 +651,10 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => { sound.playMove(); setGameMode('classic'); }}
-                      className={`flex-1 py-2 text-xs font-display font-bold rounded-lg transition-all cursor-pointer ${
+                      className={`flex-1 py-2 text-xs font-sans font-bold rounded-lg transition-all cursor-pointer ${
                         gameMode === 'classic'
-                          ? 'bg-[#0052FF] text-white shadow-sm'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                          ? 'cora-btn-primary shadow-sm'
+                          : 'text-deep-navy/60 hover:text-deep-navy'
                       }`}
                     >
                       ⚡ {translations[lang].difficulty.classic_tab}
@@ -513,23 +665,23 @@ export default function App() {
                     <div>
                       {/* Campaign summary */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[11px] font-mono font-bold uppercase tracking-wide flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                          {translations[lang].difficulty.campaign_progress}: <span className="text-[#0052FF]">{unlockedLevel} / 50</span>
+                        <span className="text-[11px] font-mono font-bold uppercase tracking-wide flex items-center gap-1 text-deep-navy/70">
+                          {translations[lang].difficulty.campaign_progress}: <span className="text-cerulean-sky">{unlockedLevel} / 50</span>
                         </span>
-                        <span className="text-[11px] font-mono text-[#0052FF] font-bold">
+                        <span className="text-[11px] font-mono text-cerulean-sky font-bold">
                           {Math.round((unlockedLevel / 50) * 100)}%
                         </span>
                       </div>
 
                       {/* Progress bar */}
-                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mb-3 border border-slate-200/20">
+                      <div className="w-full h-1.5 bg-cloud-white rounded-full overflow-hidden mb-4 border border-deep-navy/5">
                         <div
-                          className="h-full bg-gradient-to-r from-[#0052FF] to-sky-400 rounded-full transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-deep-navy to-cerulean-sky rounded-full transition-all duration-500"
                           style={{ width: `${(unlockedLevel / 50) * 100}%` }}
                         ></div>
                       </div>
 
-                      <p className={`text-[11px] mb-4 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                      <p className="text-[11px] mb-4 leading-relaxed text-deep-navy/70">
                         {translations[lang].difficulty.campaign_desc}
                       </p>
 
@@ -548,14 +700,12 @@ export default function App() {
                                 sound.playMove();
                                 setCampaignLevel(lvl);
                               }}
-                              className={`relative py-2 rounded-lg text-center text-xs font-mono font-extrabold border transition-all flex flex-col items-center justify-center cursor-pointer ${
+                              className={`relative py-2 rounded-lg text-center text-xs font-mono font-bold border transition-all flex flex-col items-center justify-center cursor-pointer ${
                                 isSelected
-                                  ? 'bg-[#0052FF] border-[#0052FF] text-white shadow-md shadow-blue-500/20 scale-105 z-10'
+                                  ? 'bg-deep-navy border-deep-navy text-white shadow-sm scale-105 z-10'
                                   : isUnlocked
-                                    ? isDark
-                                      ? 'bg-slate-900/80 border-slate-800 text-slate-200 hover:border-[#0052FF]'
-                                      : 'bg-white border-slate-200 text-slate-700 hover:border-[#0052FF] hover:bg-blue-50/20 shadow-sm'
-                                    : 'bg-slate-100 dark:bg-slate-950/40 border-slate-200 dark:border-slate-900 text-slate-400/30 dark:text-slate-600/30 cursor-not-allowed'
+                                    ? 'bg-white border-deep-navy/10 text-deep-navy hover:border-cerulean-sky hover:bg-cloud-white'
+                                    : 'bg-cloud-white/40 border-deep-navy/5 text-deep-navy/20 cursor-not-allowed'
                               }`}
                             >
                               {isUnlocked ? (
@@ -564,7 +714,7 @@ export default function App() {
                                 <span className="text-[10px]">🔒</span>
                               )}
                               {isUnlocked && lvl < unlockedLevel && (
-                                <span className="absolute bottom-0.5 right-1 text-[7px] text-emerald-500 font-bold">✓</span>
+                                <span className="absolute bottom-0.5 right-1 text-[7px] text-warm-red font-bold">✓</span>
                               )}
                             </button>
                           );
@@ -580,19 +730,15 @@ export default function App() {
                         onClick={() => { sound.playMove(); setDifficulty('standard'); }}
                         className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                           difficulty === 'standard'
-                            ? isDark
-                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                            : isDark
-                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                            ? 'bg-cloud-white border-2 border-deep-navy shadow-sm'
+                            : 'bg-white/50 border-deep-navy/10 hover:border-deep-navy/30 text-deep-navy/80 hover:bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.easy_title}</span>
-                          <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>10 x 10</span>
+                          <span className="font-serif font-bold text-sm text-deep-navy">{translations[lang].difficulty.easy_title}</span>
+                          <span className="text-[10px] font-mono font-bold text-cerulean-sky">10 x 10</span>
                         </div>
-                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        <p className="text-[11px] mt-1.5 leading-relaxed text-deep-navy/70">
                           {translations[lang].difficulty.easy_desc}
                         </p>
                       </button>
@@ -603,19 +749,15 @@ export default function App() {
                         onClick={() => { sound.playMove(); setDifficulty('batch'); }}
                         className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                           difficulty === 'batch'
-                            ? isDark
-                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                            : isDark
-                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                            ? 'bg-cloud-white border-2 border-deep-navy shadow-sm'
+                            : 'bg-white/50 border-deep-navy/10 hover:border-deep-navy/30 text-deep-navy/80 hover:bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.medium_title}</span>
-                          <span className="text-[10px] font-mono text-[#0052FF] font-bold">15 x 15</span>
+                          <span className="font-serif font-bold text-sm text-deep-navy">{translations[lang].difficulty.medium_title}</span>
+                          <span className="text-[10px] font-mono text-warm-red font-bold">15 x 15</span>
                         </div>
-                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        <p className="text-[11px] mt-1.5 leading-relaxed text-deep-navy/70">
                           {translations[lang].difficulty.medium_desc}
                         </p>
                       </button>
@@ -626,19 +768,15 @@ export default function App() {
                         onClick={() => { sound.playMove(); setDifficulty('superchain'); }}
                         className={`p-4 rounded-xl text-left border cursor-pointer transition-all ${
                           difficulty === 'superchain'
-                            ? isDark
-                              ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-lg shadow-[#0052FF]/5'
-                              : 'bg-blue-50 border-2 border-[#0052FF] shadow-md shadow-blue-500/5'
-                            : isDark
-                              ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
-                              : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-100/50'
+                            ? 'bg-cloud-white border-2 border-deep-navy shadow-sm'
+                            : 'bg-white/50 border-deep-navy/10 hover:border-deep-navy/30 text-deep-navy/80 hover:bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`font-display font-bold text-sm ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{translations[lang].difficulty.hard_title}</span>
-                          <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>21 x 21</span>
+                          <span className="font-serif font-bold text-sm text-deep-navy">{translations[lang].difficulty.hard_title}</span>
+                          <span className="text-[10px] font-mono font-bold text-deep-navy">21 x 21</span>
                         </div>
-                        <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                        <p className="text-[11px] mt-1.5 leading-relaxed text-deep-navy/70">
                           {translations[lang].difficulty.hard_desc}
                         </p>
                       </button>
@@ -667,7 +805,7 @@ export default function App() {
                 onGameCompleted={handleGameCompleted}
                 onBackToMenu={handleBackToMenu}
                 lang={lang}
-                theme={theme}
+                theme="light"
                 specialTokens={specialTokens}
                 setSpecialTokens={setSpecialTokens}
               />
@@ -687,7 +825,7 @@ export default function App() {
                 currentDifficulty={difficulty}
                 playerName={playerName}
                 lang={lang}
-                theme={theme}
+                theme="light"
               />
             </motion.div>
           )}
@@ -696,16 +834,12 @@ export default function App() {
       </main>
 
       {/* FOOTER & LIVE BLOCK UPDATES TICKER */}
-      <footer className={`border-t py-4 mt-auto transition-colors duration-300 ${
-        isDark ? 'border-slate-800 bg-[#020617]' : 'border-slate-200 bg-slate-100 text-slate-800'
-      }`}>
+      <footer className="border-t border-deep-navy/10 py-4 mt-auto bg-cloud-white/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* News Ticker Panel */}
-          <div className={`w-full md:max-w-2xl border rounded-xl px-3.5 py-2 overflow-hidden flex items-center gap-3 ${
-            isDark ? 'bg-slate-900/30 border-slate-800/80' : 'bg-white border-slate-200 shadow-sm'
-          }`}>
-            <span className="bg-[#0052FF]/10 text-[#0052FF] border border-[#0052FF]/20 text-[9px] font-mono font-bold px-2 py-0.5 rounded flex-shrink-0 animate-pulse-ring">
+          <div className="w-full md:max-w-2xl border border-deep-navy/10 rounded-xl px-3.5 py-2 overflow-hidden flex items-center gap-3 bg-white/60">
+            <span className="bg-warm-red/10 text-warm-red border border-warm-red/20 text-[9px] font-mono font-bold px-2 py-0.5 rounded flex-shrink-0">
               LIVE BROADCAST
             </span>
             
@@ -717,9 +851,7 @@ export default function App() {
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -12, opacity: 0 }}
                   transition={{ duration: 0.4 }}
-                  className={`text-xs font-mono absolute inset-x-0 truncate ${
-                    isDark ? 'text-slate-400' : 'text-slate-600'
-                  }`}
+                  className="text-xs font-mono absolute inset-x-0 truncate text-deep-navy/70"
                 >
                   {translations[lang].news_ticker[tickerIndex]}
                 </motion.p>
@@ -727,18 +859,16 @@ export default function App() {
             </div>
           </div>
 
-          {/* Copyright details & contract address inside Elegant Theme */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          {/* Copyright details & contract address */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 text-[10px] font-mono text-deep-navy/60 uppercase tracking-wider">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] shadow-[0_0_6px_#0052FF]"></span>
-              <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>B20 MAZE GAME</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-warm-red shadow-[0_0_6px_rgba(200,60,42,0.4)]"></span>
+              <span className="text-deep-navy/70">B20 MAZE GAME</span>
             </div>
-            <span className="hidden sm:inline text-slate-700">•</span>
-            <span className={isDark ? 'text-slate-500' : 'text-slate-600'}>Build By Sividelia_okuni6</span>
-            <span className="hidden sm:inline text-slate-700">•</span>
-            <span className={`hover:text-[#0052FF] cursor-pointer transition-colors ${
-              isDark ? 'text-slate-500 hover:text-white' : 'text-slate-600'
-            }`}>Contract: 0xBASE...0001</span>
+            <span className="hidden sm:inline text-deep-navy/30">•</span>
+            <span className="text-deep-navy/70">Build By Sividelia_okuni6</span>
+            <span className="hidden sm:inline text-deep-navy/30">•</span>
+            <span className="hover:text-cerulean-sky cursor-pointer transition-colors text-deep-navy/70">Contract: 0xBASE...0001</span>
           </div>
 
         </div>
