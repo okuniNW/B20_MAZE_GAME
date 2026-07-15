@@ -254,6 +254,13 @@ export default function App() {
                 >
                   <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
                 </button>
+
+                {isMusicOn && (
+                  <span className="hidden lg:inline-flex items-center gap-1.5 text-[9px] font-mono font-bold tracking-wider text-[#0052FF] bg-[#0052FF]/5 border border-[#0052FF]/15 px-2.5 py-1 rounded-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0052FF] animate-ping"></span>
+                    FC TOTS THEME
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -404,9 +411,14 @@ export default function App() {
                         } ${isMusicOn ? 'border-[#0052FF]/30 text-[#0052FF] dark:text-[#0052FF] bg-[#0052FF]/5' : ''}`}
                       >
                         <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
-                        <span>
+                        <span className="flex-grow text-left">
                           {isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}
                         </span>
+                        {isMusicOn && (
+                          <span className="text-[9px] font-mono bg-[#0052FF]/10 text-[#0052FF] px-1.5 py-0.5 rounded font-bold animate-pulse">
+                            TOTS ACTIVE
+                          </span>
+                        )}
                       </button>
 
                       {/* Light/Dark mode toggle */}
