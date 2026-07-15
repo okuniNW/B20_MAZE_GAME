@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Volume2,
   VolumeX,
+  Music,
   Trophy,
   Activity,
   Cpu,
@@ -38,6 +39,9 @@ export default function App() {
   });
   const [difficulty, setDifficulty] = useState<Difficulty>('standard');
   const [isMuted, setIsMuted] = useState(false);
+  const [isMusicOn, setIsMusicOn] = useState(() => {
+    return localStorage.getItem('base_maze_music_on') !== 'false';
+  });
   const [tickerIndex, setTickerIndex] = useState(0);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('base_maze_theme') as 'light' | 'dark') || 'light';
@@ -57,6 +61,14 @@ export default function App() {
     localStorage.setItem('base_maze_special_tokens', String(specialTokens));
   }, [specialTokens]);
 
+  // Sync music state with SoundEngine
+  useEffect(() => {
+    sound.setMusicEnabled(isMusicOn);
+    return () => {
+      sound.setMusicEnabled(false);
+    };
+  }, [isMusicOn]);
+
   // Auto-rotate news ticker updates
   useEffect(() => {
     const tickers = translations[lang].news_ticker;
@@ -70,6 +82,13 @@ export default function App() {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     sound.setMute(nextMuted);
+    sound.playMove();
+  };
+
+  const handleToggleMusic = () => {
+    const nextMusic = !isMusicOn;
+    setIsMusicOn(nextMusic);
+    localStorage.setItem('base_maze_music_on', String(nextMusic));
     sound.playMove();
   };
 
@@ -222,6 +241,19 @@ export default function App() {
                 >
                   {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                 </button>
+
+                {/* Music Toggle */}
+                <button
+                  onClick={handleToggleMusic}
+                  className={`p-1.5 border rounded-lg transition cursor-pointer ${
+                    isDark
+                      ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300'
+                  } ${isMusicOn ? 'text-[#0052FF] border-[#0052FF]/30 bg-[#0052FF]/5' : ''}`}
+                  title={isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}
+                >
+                  <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
+                </button>
               </div>
             </div>
           </div>
@@ -356,6 +388,24 @@ export default function App() {
                         {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                         <span>
                           {isMuted ? translations[lang].header.unmute : translations[lang].header.mute}
+                        </span>
+                      </button>
+
+                      {/* Music Toggle */}
+                      <button
+                        onClick={() => {
+                          handleToggleMusic();
+                          setIsMenuOpen(false);
+                        }}
+                        className={`w-full py-2 px-3 rounded-xl text-xs font-display font-semibold flex items-center gap-2 transition cursor-pointer border ${
+                          isDark
+                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                            : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-950 hover:border-slate-300'
+                        } ${isMusicOn ? 'border-[#0052FF]/30 text-[#0052FF] dark:text-[#0052FF] bg-[#0052FF]/5' : ''}`}
+                      >
+                        <Music size={14} className={isMusicOn ? 'animate-pulse' : ''} />
+                        <span>
+                          {isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}
                         </span>
                       </button>
 

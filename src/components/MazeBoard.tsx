@@ -150,7 +150,7 @@ export default function MazeBoard({
   }, []);
 
   // Generate the maze
-  const generateMaze = () => {
+  const generateMaze = (forceFresh = false) => {
     sound.playReset();
     setAutoSolving(false);
     setShowHint(false);
@@ -160,6 +160,40 @@ export default function MazeBoard({
     setHasEnabledHints(false);
     setEarnedBadges([]);
     setParticles([]);
+
+    // Check if there's a saved state to resume from
+    if (isCampaign && !forceFresh) {
+      const savedStateStr = localStorage.getItem('base_maze_campaign_resume_state');
+      if (savedStateStr) {
+        try {
+          const savedState = JSON.parse(savedStateStr);
+          if (savedState && savedState.campaignLevel === campaignLevel && savedState.grid && savedState.player && savedState.stats) {
+            setGrid(savedState.grid);
+            setPlayer(savedState.player);
+            setStats(savedState.stats);
+            if (savedState.specialTokens !== undefined) {
+              setSpecialTokens(savedState.specialTokens);
+            }
+            if (savedState.hasUsedBypass !== undefined) setHasUsedBypass(savedState.hasUsedBypass);
+            if (savedState.hasEnabledHints !== undefined) setHasEnabledHints(savedState.hasEnabledHints);
+            if (savedState.showHint !== undefined) setShowHint(savedState.showHint);
+            if (savedState.hintUnlocked !== undefined) setHintUnlocked(savedState.hintUnlocked);
+            
+            setIsReady(true);
+            calculateShortestPath(savedState.grid, savedState.player.x, savedState.player.y);
+            
+            setToastMessage(lang === 'id' 
+              ? `📦 Melanjutkan Level ${campaignLevel} dari progres sebelumnya!` 
+              : `📦 Resumed Level ${campaignLevel} from your previous progress!`
+            );
+            return; // Successfully loaded the save state
+          }
+        } catch (e) {
+          console.error("Error parsing saved campaign state:", e);
+        }
+      }
+    }
+
     setPlayer({ x: 0, y: 0 });
     setStats({
       timeElapsed: 0,
@@ -399,6 +433,38 @@ export default function MazeBoard({
     };
   }, [difficulty, isCampaign, campaignLevel]);
 
+  // Save campaign state on any gameplay update
+  useEffect(() => {
+    if (isCampaign && isReady && !hasWon && !autoSolving && grid.length > 0) {
+      const stateToSave = {
+        campaignLevel,
+        player,
+        grid,
+        stats,
+        specialTokens,
+        hasUsedBypass,
+        hasEnabledHints,
+        showHint,
+        hintUnlocked
+      };
+      localStorage.setItem('base_maze_campaign_resume_state', JSON.stringify(stateToSave));
+    }
+  }, [
+    isCampaign,
+    isReady,
+    hasWon,
+    autoSolving,
+    campaignLevel,
+    player,
+    grid,
+    stats,
+    specialTokens,
+    hasUsedBypass,
+    hasEnabledHints,
+    showHint,
+    hintUnlocked
+  ]);
+
   // Track if hints are enabled during this maze run
   useEffect(() => {
     if (showHint) {
@@ -428,14 +494,22 @@ export default function MazeBoard({
 
     const currentCell = grid[player.y][player.x];
     let canMove = false;
+    let autoUsedNoclip = false;
 
-    // Check Wall barriers unless "No-Clipped Wall Break" validator token is active
-    if (stats.isNoclipped) {
-      // Break walls in this direction!
+    // 1. Try standard movement (no wall block)
+    if (dy === -1 && !currentCell.walls.top) canMove = true;
+    else if (dx === 1 && !currentCell.walls.right) canMove = true;
+    else if (dy === 1 && !currentCell.walls.bottom) canMove = true;
+    else if (dx === -1 && !currentCell.walls.left) canMove = true;
+
+    // 2. Passive Validator Booster: automatically break firewall on contact if tokens available or noclipped is pre-activated
+    if (!canMove && (stats.isNoclipped || stats.validatorTokens > 0)) {
       const targetX = player.x + dx;
       const targetY = player.y + dy;
       if (targetX >= 0 && targetX < cols && targetY >= 0 && targetY < rows) {
         canMove = true;
+        autoUsedNoclip = true;
+
         // Break the walls physically on the grid so it stays open!
         const targetCell = grid[targetY][targetX];
         const newGrid = [...grid];
@@ -455,14 +529,7 @@ export default function MazeBoard({
         setGrid(newGrid);
         sound.playPowerup();
         setHasUsedBypass(true);
-        // Consume noclip state
-        setStats(prev => ({ ...prev, isNoclipped: false }));
       }
-    } else {
-      if (dy === -1 && !currentCell.walls.top) canMove = true;
-      if (dx === 1 && !currentCell.walls.right) canMove = true;
-      if (dy === 1 && !currentCell.walls.bottom) canMove = true;
-      if (dx === -1 && !currentCell.walls.left) canMove = true;
     }
 
     if (canMove) {
@@ -507,10 +574,22 @@ export default function MazeBoard({
       setPlayer({ x: finalX, y: finalY });
       setStats(prev => {
         const nextGasCost = Math.max(0.0005, prev.gasCost - (collectedGas * 0.0015));
+        let nextValidatorTokens = prev.validatorTokens + collectedVal;
+        let nextIsNoclipped = prev.isNoclipped;
+
+        if (autoUsedNoclip) {
+          if (nextIsNoclipped) {
+            nextIsNoclipped = false;
+          } else if (nextValidatorTokens > 0) {
+            nextValidatorTokens -= 1;
+          }
+        }
+
         return {
           ...prev,
           transactionsMade: prev.transactionsMade + 1,
-          validatorTokens: prev.validatorTokens + collectedVal,
+          validatorTokens: nextValidatorTokens,
+          isNoclipped: nextIsNoclipped,
           gasCost: nextGasCost
         };
       });
@@ -531,6 +610,10 @@ export default function MazeBoard({
     sound.playWin();
     setHasWon(true);
     if (timerRef.current) clearInterval(timerRef.current);
+
+    if (isCampaign) {
+      localStorage.removeItem('base_maze_campaign_resume_state');
+    }
 
     // Generate celebratory particles using motion/react
     const colors = ['#0052FF', '#38BDF8', '#34D399', '#FBBF24', '#F43F5E', '#A855F7'];
@@ -736,13 +819,20 @@ export default function MazeBoard({
   };
 
   const handleRegenClick = () => {
-    if (specialTokens >= 1) {
-      setSpecialTokens(prev => prev - 1);
+    if (isCampaign) {
+      // In campaign, let them reset/restart the level for free!
+      localStorage.removeItem('base_maze_campaign_resume_state');
       setHintUnlocked(false);
-      generateMaze();
+      generateMaze(true); // Force fresh generation
     } else {
-      sound.playError();
-      setToastMessage(translations[lang].mazeboard.insufficient_tokens);
+      if (specialTokens >= 1) {
+        setSpecialTokens(prev => prev - 1);
+        setHintUnlocked(false);
+        generateMaze();
+      } else {
+        sound.playError();
+        setToastMessage(translations[lang].mazeboard.insufficient_tokens);
+      }
     }
   };
 

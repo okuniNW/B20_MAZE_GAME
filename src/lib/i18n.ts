@@ -8,6 +8,8 @@ export interface TranslationDictionary {
     leaderboard: string;
     unmute: string;
     mute: string;
+    music_on: string;
+    music_off: string;
     theme_light: string;
     theme_dark: string;
     menu: string;
@@ -113,6 +115,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       leaderboard: "Leaderboard",
       unmute: "Unmute sounds",
       mute: "Mute sounds",
+      music_on: "Play background music",
+      music_off: "Mute background music",
       theme_light: "Light Mode",
       theme_dark: "Dark Mode",
       menu: "Menu",
@@ -131,7 +135,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       gas_title: "Collect Gas (Gwei)",
       gas_desc: "Collect gas tokens to lower transaction fees and boost your TPS score.",
       val_title: "Validator Booster",
-      val_desc: "Get validator tokens. Press SPACE to destroy 1 blocking wall!",
+      val_desc: "Get validator tokens. Walk directly into a firewall wall to automatically break it!",
       portal_title: "Superchain Portal",
       portal_desc: "Use L1 ↔ L2 bridge portals to teleport across the maze.",
       input_label: "Your Base Builder Name",
@@ -187,7 +191,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       generating_grid: "Generating Maze Block...",
       wallet_label: "Wallet",
       block_label: "Block",
-      keyboard_hints: "Use WASD or Arrow Keys to move. Press SPACE to smash firewall walls.",
+      keyboard_hints: "Use WASD or Arrow Keys to move. Move directly into a firewall wall to smash it using a Validator Token.",
       profile_title: "Base Network Builder",
       block_num_label: "BLOCK NUMBER",
       stability_label: "L2 STABILITY",
@@ -198,7 +202,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       data_processed_label: "Data Processed",
       tps_est_label: "Estimated TPS",
       bypass_title: "VALIDATOR BYPASS KEY",
-      bypass_desc: "Use Validator Bypass Key to break firewall walls in the maze if you get stuck.",
+      bypass_desc: "Bypass Key is automatically consumed when you walk into a firewall wall. Simply move directly towards the wall to break it!",
       bypass_available: "Available",
       bypass_active: "Firewall Bypass Active!",
       bypass_use: "Use Bypass",
@@ -232,6 +236,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       leaderboard: "Leaderboard",
       unmute: "Bunyikan suara",
       mute: "Matikan suara",
+      music_on: "Mainkan musik latar",
+      music_off: "Matikan musik latar",
       theme_light: "Mode Terang",
       theme_dark: "Mode Gelap",
       menu: "Menu",
@@ -250,7 +256,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       gas_title: "Kumpulkan Gas (Gwei)",
       gas_desc: "Ambil token gas untuk memotong biaya transaksi dan meningkatkan skor TPS.",
       val_title: "Validator Booster",
-      val_desc: "Dapatkan validator token. Tekan SPACE untuk menghancurkan 1 tembok penghalang!",
+      val_desc: "Dapatkan validator token. Cukup arahkan langsung ke tembok firewall untuk membukanya secara otomatis!",
       portal_title: "Superchain Portal",
       portal_desc: "Gunakan portal jembatan L1 ↔ L2 untuk melakukan teleportasi melintasi labirin.",
       input_label: "Nama Builder Base Anda",
@@ -306,7 +312,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       generating_grid: "Menghasilkan Blok Labirin...",
       wallet_label: "Wallet",
       block_label: "Blok",
-      keyboard_hints: "Gunakan WASD atau Tombol Panah untuk bergerak. Tekan SPACE untuk mendobrak dinding firewall.",
+      keyboard_hints: "Gunakan WASD atau Tombol Panah untuk bergerak. Arahkan langsung ke dinding untuk mendobrak dengan Validator Token.",
       profile_title: "Base Network Builder",
       block_num_label: "NOMOR BLOK",
       stability_label: "STABILITAS L2",
@@ -317,7 +323,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       data_processed_label: "Data Diproses",
       tps_est_label: "TPS Estimasi",
       bypass_title: "VALIDATOR BYPASS KEY",
-      bypass_desc: "Gunakan Validator Bypass Key untuk mendobrak dinding firewall di labirin jika Anda terjebak.",
+      bypass_desc: "Bypass Key otomatis digunakan saat Anda mencoba menembus dinding firewall. Cukup arahkan gerakan Anda langsung ke dinding!",
       bypass_available: "Tersedia",
       bypass_active: "Firewall Dobrak Aktif!",
       bypass_use: "Gunakan Bypass",
@@ -351,6 +357,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       leaderboard: "排行榜",
       unmute: "开启声音",
       mute: "静音",
+      music_on: "播放背景音乐",
+      music_off: "静音背景音乐",
       theme_light: "浅色模式",
       theme_dark: "深色模式",
       menu: "菜单",
@@ -470,6 +478,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       leaderboard: "Classement",
       unmute: "Activer le son",
       mute: "Couper le son",
+      music_on: "Activer la musique de fond",
+      music_off: "Couper la musique de fond",
       theme_light: "Mode Clair",
       theme_dark: "Mode Sombre",
       menu: "Menu",
