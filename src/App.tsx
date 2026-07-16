@@ -140,7 +140,7 @@ export default function App() {
       
       {/* FLOATING HEADER PILL (COOLDOCK / IMAGE 2 STYLE) */}
       <div className="sticky top-0 z-50 w-full px-4 pt-4 pb-2">
-        <header className="relative mx-auto max-w-2xl bg-white/85 dark:bg-[#0a141f]/85 backdrop-blur-lg rounded-full border border-deep-navy/5 dark:border-white/10 shadow-[0_12px_40px_rgba(6,29,51,0.08)] px-5 py-3 flex items-center justify-between transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]">
+        <header className="relative mx-auto max-w-2xl bg-[#0200FA] backdrop-blur-lg rounded-full border border-white/15 shadow-[0_12px_40px_rgba(2,0,250,0.25)] px-5 py-3 flex items-center justify-between transition-all duration-300">
           
           {/* Logo & Brand title */}
           <div 
@@ -150,7 +150,7 @@ export default function App() {
             {/* Custom Base Wordmark SVG Logo */}
             <svg 
               viewBox="0 0 440 150" 
-              className="h-5 w-auto text-[#0200FA] dark:text-white transition-all duration-300 group-hover:scale-105 flex-shrink-0"
+              className="h-5 w-auto text-white transition-all duration-300 group-hover:scale-105 flex-shrink-0"
               fill="currentColor"
             >
               {/* b-shape */}
@@ -164,10 +164,10 @@ export default function App() {
             </svg>
             
             <div className="flex flex-col text-left">
-              <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
+              <span className="font-serif font-light text-sm tracking-wide leading-tight text-white">
                 {translations[lang].header.title}
               </span>
-              <span className="block text-[8px] font-mono text-deep-navy/50 dark:text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+              <span className="block text-[8px] font-mono text-white/70 uppercase tracking-widest leading-none mt-0.5">
                 {translations[lang].header.subtitle}
               </span>
             </div>
@@ -175,12 +175,12 @@ export default function App() {
 
           {/* Quick Stats on Desktop / Inline details */}
           <div className="hidden sm:flex items-center gap-3 select-none">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-deep-navy/5 bg-cloud-white/40 dark:bg-slate-800/40 text-[9px] font-mono uppercase tracking-wider text-deep-navy/60 dark:text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-warm-red animate-pulse"></span>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 bg-white/10 text-[9px] font-mono uppercase tracking-wider text-white/90">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
               {translations[lang].header.base_mainnet}
             </div>
             {isMusicOn && (
-              <span className="flex items-center gap-1 text-[9px] font-mono font-bold tracking-wider text-cerulean-sky bg-cerulean-sky/5 border border-cerulean-sky/10 px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-[9px] font-mono font-bold tracking-wider text-white bg-white/10 border border-white/15 px-2.5 py-1 rounded-full">
                 <Music size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
                 AMBIENT
               </span>
@@ -190,7 +190,7 @@ export default function App() {
           {/* Menu Button with Hamburger Menu Icon */}
           <button
             onClick={() => { sound.playMove(); setIsMenuOpen(!isMenuOpen); }}
-            className="p-2.5 rounded-full border border-deep-navy/5 bg-deep-navy/5 hover:bg-deep-navy/10 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all duration-200 flex items-center justify-center cursor-pointer select-none"
+            className="p-2.5 rounded-full border border-white/15 bg-white/10 hover:bg-white/20 text-white transition-all duration-200 flex items-center justify-center cursor-pointer select-none"
             aria-label="Toggle menu"
           >
             <Menu size={16} />
@@ -217,27 +217,27 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="relative w-full max-w-sm bg-white dark:bg-[#0a141f] rounded-[32px] shadow-[0_25px_60px_rgba(6,29,51,0.18)] flex flex-col p-6 font-sans border border-deep-navy/5 dark:border-white/10 z-10 max-h-[calc(100vh-2.5rem)] overflow-y-auto scrollbar-none text-left"
+              className="relative w-full max-w-sm bg-[#0200FA] rounded-[32px] shadow-[0_25px_60px_rgba(2,0,250,0.35)] flex flex-col p-6 font-sans border border-white/15 z-10 max-h-[calc(100vh-2.5rem)] overflow-y-auto scrollbar-none text-left text-white"
             >
               {/* Header inside Menu Card */}
               <div className="flex items-center justify-between mb-6 select-none">
                 <div className="flex items-center gap-2.5">
-                  <div className="relative w-8 h-8 rounded-full border border-warm-red/40 bg-cloud-white flex items-center justify-center shadow-sm">
-                    <span className="font-serif italic font-bold text-xs text-deep-navy">T</span>
-                    <span className="font-serif italic font-bold text-[8px] text-warm-red relative -top-1">S</span>
+                  <div className="relative w-8 h-8 rounded-full border border-white/20 bg-white flex items-center justify-center shadow-sm">
+                    <span className="font-serif italic font-bold text-xs text-[#0200FA]">T</span>
+                    <span className="font-serif italic font-bold text-[8px] text-[#0200FA]/80 relative -top-1">S</span>
                   </div>
                   <div className="flex flex-col text-left">
-                    <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
+                    <span className="font-serif font-light text-sm tracking-wide leading-tight text-white">
                       {translations[lang].header.title}
                     </span>
-                    <span className="block text-[8px] font-mono text-deep-navy/50 dark:text-slate-400 uppercase tracking-widest leading-none mt-0.5">
+                    <span className="block text-[8px] font-mono text-white/70 uppercase tracking-widest leading-none mt-0.5">
                       {translations[lang].header.subtitle}
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => { sound.playMove(); setIsMenuOpen(false); }}
-                  className="p-1.5 rounded-full hover:bg-deep-navy/5 text-deep-navy/40 hover:text-deep-navy dark:text-slate-400 dark:hover:text-slate-200 transition cursor-pointer"
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white/80 hover:text-white transition cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -247,10 +247,10 @@ export default function App() {
               <div className="flex flex-col gap-4 mb-6 text-left">
                 {/* LANGUAGE SECTION */}
                 <div className="flex flex-col select-none">
-                  <div className="text-[10px] font-mono tracking-widest text-deep-navy/40 dark:text-slate-400 uppercase mb-2">
+                  <div className="text-[10px] font-mono tracking-widest text-white/70 uppercase mb-2">
                     LANGUAGE / BAHASA
                   </div>
-                  <div className="grid grid-cols-4 bg-deep-navy/5 dark:bg-slate-800/60 p-1 rounded-[16px]">
+                  <div className="grid grid-cols-4 bg-white/10 p-1 rounded-[16px] border border-white/10">
                     {(['en', 'id', 'zh', 'fr'] as Language[]).map((l) => (
                       <button
                         key={l}
@@ -261,8 +261,8 @@ export default function App() {
                         }}
                         className={`py-2 text-xs font-bold rounded-[12px] transition-all cursor-pointer ${
                           lang === l
-                            ? 'bg-[#005cff] text-white shadow-sm'
-                            : 'text-deep-navy/60 dark:text-slate-400 hover:text-deep-navy hover:bg-deep-navy/5 dark:hover:bg-slate-700/50'
+                            ? 'bg-white text-[#0200FA] shadow-sm'
+                            : 'text-white/85 hover:text-white hover:bg-white/10'
                         }`}
                       >
                         {l.toUpperCase()}
@@ -272,7 +272,7 @@ export default function App() {
                 </div>
 
                 {/* Divider line */}
-                <div className="h-px bg-deep-navy/5 dark:bg-white/10 my-2 w-full" />
+                <div className="h-px bg-white/10 my-2 w-full" />
 
                 {/* Leaderboard option */}
                 <button
@@ -281,13 +281,13 @@ export default function App() {
                     setScreen('leaderboard');
                     setIsMenuOpen(false);
                   }}
-                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center justify-between font-sans font-medium text-base transition-all duration-200 cursor-pointer"
+                  className="w-full bg-white/10 hover:bg-white/15 text-white rounded-[20px] py-4 px-5 flex items-center justify-between font-sans font-medium text-base transition-all duration-200 cursor-pointer border border-white/10"
                 >
                   <div className="flex items-center gap-3.5">
-                    <Trophy className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                    <Trophy className="w-5 h-5 text-white" />
                     <span>{translations[lang].header.leaderboard}</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-deep-navy/30 dark:text-slate-500" />
+                  <ChevronRight className="w-4 h-4 text-white/60" />
                 </button>
 
                 {/* Mute sounds option */}
@@ -295,16 +295,16 @@ export default function App() {
                   onClick={() => {
                     handleToggleMute();
                   }}
-                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
+                  className="w-full bg-white/10 hover:bg-white/15 text-white rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left border border-white/10"
                 >
                   {isMuted ? (
                     <>
-                      <VolumeX className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                      <VolumeX className="w-5 h-5 text-white" />
                       <span>{translations[lang].header.unmute}</span>
                     </>
                   ) : (
                     <>
-                      <Volume2 className="w-5 h-5 text-deep-navy/70 dark:text-slate-300" />
+                      <Volume2 className="w-5 h-5 text-white" />
                       <span>{translations[lang].header.mute}</span>
                     </>
                   )}
@@ -315,12 +315,11 @@ export default function App() {
                   onClick={() => {
                     handleToggleMusic();
                   }}
-                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
+                  className="w-full bg-white/10 hover:bg-white/15 text-white rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left border border-white/10"
                 >
-                  <Music className={`w-5 h-5 text-deep-navy/70 dark:text-slate-300 ${isMusicOn ? 'animate-spin' : ''}`} style={isMusicOn ? { animationDuration: '4s' } : undefined} />
+                  <Music className={`w-5 h-5 text-white ${isMusicOn ? 'animate-spin' : ''}`} style={isMusicOn ? { animationDuration: '4s' } : undefined} />
                   <span>{isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}</span>
                 </button>
-
 
               </div>
 
@@ -338,7 +337,7 @@ export default function App() {
                     boardEl.scrollIntoView({ behavior: 'smooth' });
                   }
                 }}
-                className="w-full bg-black dark:bg-slate-800 hover:bg-black/90 dark:hover:bg-slate-750 active:scale-[0.98] text-white rounded-[20px] py-4 px-5 font-sans font-semibold text-sm flex items-center justify-center gap-2 shadow-md transition-all duration-200 cursor-pointer"
+                className="w-full bg-white text-[#0200FA] hover:bg-white/90 active:scale-[0.98] rounded-[20px] py-4 px-5 font-sans font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all duration-200 cursor-pointer"
               >
                 <span>Mulai Perjalanan (Start Journey)</span>
               </button>
