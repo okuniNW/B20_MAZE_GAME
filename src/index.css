@@ -7,32 +7,33 @@
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-cerulean-sky: #117bc8;
-  --color-deep-navy: #061d33;
-  --color-warm-red: #c83c2a;
-  --color-cloud-white: #f7fafd;
-  --color-ink-dark: #061d33;
+  --color-cerulean-sky: #0200FA;
+  --color-deep-navy: #0200FA;
+  --color-warm-red: #0200FA;
+  --color-cloud-white: #FFFFFF;
+  --color-ink-dark: #0200FA;
 }
 
-/* Custom scrollbar for game elements */
+/* Custom scrollbar for game elements using pure blue/white */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(6, 29, 51, 0.05);
+  background: rgba(2, 0, 250, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(6, 29, 51, 0.2);
+  background: rgba(2, 0, 250, 0.2);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(17, 123, 200, 0.4);
+  background: rgba(2, 0, 250, 0.5);
 }
 
 /* Cora-specific stylistic elements */
 .cora-canvas {
-  background-image: url('/src/assets/images/sky_canvas_1784092998984.jpg');
+  background-color: #FFFFFF;
+  background-image: url("https://s3-figma-hubfile-images-production-cdn-cgi.figma.com/cdn-cgi/image/format=auto,quality=85,width=1600/hub/file/carousel/img/b1eb42d4e2c456b49bf53a8577cf7cd54ff0e308/a9457d052f772bff02b055f789a76311632ad5cb");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -40,62 +41,62 @@
 }
 
 .cora-desk-card {
-  background: rgba(244, 248, 251, 0.82);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  border: 1px solid rgba(6, 29, 51, 0.08);
-  box-shadow: 0 10px 40px -10px rgba(6, 29, 51, 0.12),
+  background: #FFFFFF;
+  border: 1px solid rgba(2, 0, 250, 0.15);
+  box-shadow: 0 10px 40px -10px rgba(2, 0, 250, 0.08),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .cora-desk-card-active {
-  background: rgba(244, 248, 251, 0.94);
-  border: 1px solid rgba(17, 123, 200, 0.25);
-  box-shadow: 0 15px 45px -10px rgba(17, 123, 200, 0.18);
+  background: #FFFFFF;
+  border: 1px solid #0200FA;
+  box-shadow: 0 15px 45px -10px rgba(2, 0, 250, 0.15);
 }
 
 .cora-btn-primary {
-  background-color: #061d33;
-  color: #f7fafd;
-  border: 1px solid #061d33;
+  background-color: #0200FA;
+  color: #FFFFFF;
+  border: 1px solid #0200FA;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cora-btn-primary:hover {
-  background-color: #117bc8;
-  border-color: #117bc8;
+  background-color: #FFFFFF;
+  color: #0200FA;
+  border-color: #0200FA;
   transform: translateY(-1px);
 }
 
 .cora-btn-secondary {
   background-color: transparent;
-  color: #061d33;
-  border: 1px solid rgba(6, 29, 51, 0.18);
+  color: #0200FA;
+  border: 1px solid rgba(2, 0, 250, 0.25);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cora-btn-secondary:hover {
-  background-color: rgba(6, 29, 51, 0.05);
-  border-color: rgba(6, 29, 51, 0.3);
+  background-color: #0200FA;
+  color: #FFFFFF;
+  border-color: #0200FA;
 }
 
 .cora-stamp-accent {
-  color: #c83c2a;
-  border-color: rgba(200, 60, 42, 0.2);
+  color: #0200FA;
+  border-color: rgba(2, 0, 250, 0.2);
 }
 
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(17, 123, 200, 0.4);
+    box-shadow: 0 0 0 0 rgba(2, 0, 250, 0.4);
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(17, 123, 200, 0);
+    box-shadow: 0 0 0 10px rgba(2, 0, 250, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(17, 123, 200, 0);
+    box-shadow: 0 0 0 0 rgba(2, 0, 250, 0);
   }
 }
 
@@ -116,69 +117,72 @@
   animation: scanner 3s ease-in-out infinite;
 }
 
-/* Dark Mode Overrides */
+/* Dark Mode Overrides for strict #0200FA and #FFFFFF dual-tone */
 .dark .cora-canvas {
-  filter: brightness(0.4) saturate(1.15) contrast(1.15);
+  background-color: #0200FA;
+  background-image: linear-gradient(rgba(2, 0, 250, 0.85), rgba(2, 0, 250, 0.85)), url("https://s3-figma-hubfile-images-production-cdn-cgi.figma.com/cdn-cgi/image/format=auto,quality=85,width=1600/hub/file/carousel/img/b1eb42d4e2c456b49bf53a8577cf7cd54ff0e308/a9457d052f772bff02b055f789a76311632ad5cb");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 .dark {
-  background-color: #030a13;
-  color: #e2e8f0;
+  background-color: #0200FA;
+  color: #FFFFFF;
 }
 .dark .cora-desk-card {
-  background: rgba(12, 22, 34, 0.85);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  color: #f7fafd;
+  background: #0200FA;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
 }
 .dark .cora-desk-card-active {
-  background: rgba(12, 22, 34, 0.95);
-  border-color: rgba(17, 123, 200, 0.4);
+  background: #0200FA;
+  border-color: #FFFFFF;
 }
 .dark .bg-white {
-  background-color: #0a141f !important;
-  color: #f7fafd !important;
+  background-color: #0200FA !important;
+  color: #FFFFFF !important;
 }
 .dark .text-black {
-  color: #f7fafd !important;
+  color: #FFFFFF !important;
 }
 .dark .text-deep-navy {
-  color: #cbd5e1 !important;
+  color: #FFFFFF !important;
 }
 .dark .border-deep-navy\/5 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-.dark .bg-deep-navy\/5 {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-.dark .hover\:bg-deep-navy\/10:hover {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-.dark .text-deep-navy\/80 {
-  color: rgba(247, 250, 253, 0.8) !important;
-}
-.dark .text-deep-navy\/40 {
-  color: rgba(247, 250, 253, 0.4) !important;
-}
-.dark .text-deep-navy\/50 {
-  color: rgba(247, 250, 253, 0.5) !important;
-}
-.dark .text-deep-navy\/60 {
-  color: rgba(247, 250, 253, 0.6) !important;
-}
-.dark .text-[#061d33] {
-  color: #f7fafd !important;
-}
-.dark .border-deep-navy\/10 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-.dark .border-deep-navy\/20 {
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
+.dark .bg-deep-navy\/5 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.dark .hover\:bg-deep-navy\/10:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+.dark .text-deep-navy\/80 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.dark .text-deep-navy\/40 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.dark .text-deep-navy\/50 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark .text-deep-navy\/60 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.dark .text-[#061d33] {
+  color: #FFFFFF !important;
+}
+.dark .border-deep-navy\/10 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+.dark .border-deep-navy\/20 {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
 .dark .bg-cloud-white {
-  background-color: #0d1e31 !important;
+  background-color: #0200FA !important;
 }
 .dark .bg-cloud-white\/40 {
-  background-color: rgba(13, 30, 49, 0.4) !important;
+  background-color: rgba(2, 0, 250, 0.4) !important;
 }
-

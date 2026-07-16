@@ -15,7 +15,16 @@ import {
   TrendingUp,
   Copy,
   Moon,
-  Sun
+  Sun,
+  Check,
+  Star,
+  Shield,
+  FileText,
+  CreditCard,
+  Map,
+  Send,
+  Heart,
+  Sparkles
 } from 'lucide-react';
 import { Difficulty, ScoreEntry } from './types';
 import Onboarding from './components/Onboarding';
@@ -24,6 +33,11 @@ import Leaderboard from './components/Leaderboard';
 import { sound } from './components/SoundEngine';
 import { Language, translations } from './lib/i18n';
 import ClipboardPanel from './components/ClipboardPanel';
+import FooterModals from './components/FooterModals';
+// @ts-ignore
+import soltWagnerImage from './assets/images/solt_wagner_1784096460966.jpg';
+// @ts-ignore
+import hillsBgImage from './assets/images/hills_footer_bg_1784096446331.jpg';
 
 export default function App() {
   const [screen, setScreen] = useState<'home' | 'playing' | 'leaderboard'>('home');
@@ -40,7 +54,7 @@ export default function App() {
   });
   const [tickerIndex, setTickerIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<'none' | 'features' | 'faq' | 'updates' | 'clipboard' | 'pricing'>('none');
+  const [activeModal, setActiveModal] = useState<'none' | 'features' | 'faq' | 'updates' | 'clipboard' | 'pricing' | 'privacy' | 'terms' | 'portal' | 'feedback' | 'roadmap'>('none');
   const [gameMode, setGameMode] = useState<'classic' | 'campaign'>('campaign');
   const [campaignLevel, setCampaignLevel] = useState<number>(1);
   const [unlockedLevel, setUnlockedLevel] = useState<number>(() => {
@@ -54,6 +68,12 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('base_maze_dark_mode') === 'true';
   });
+
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [isBetaActive, setIsBetaActive] = useState(false);
+  const [votedFeatures, setVotedFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     localStorage.setItem('base_maze_special_tokens', String(specialTokens));
@@ -135,11 +155,13 @@ export default function App() {
             onClick={() => { sound.playMove(); setScreen('home'); }}
             className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            {/* Original minimalist circular TOTS badge */}
-            <div className="relative w-8 h-8 rounded-full border border-warm-red/40 bg-cloud-white flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:rotate-12 flex-shrink-0">
-              <span className="font-serif italic font-bold text-xs text-deep-navy">T</span>
-              <span className="font-serif italic font-bold text-[8px] text-warm-red relative -top-1">S</span>
-            </div>
+            {/* Custom Logo Image */}
+            <img 
+              src="https://brand.base.org/_next/image?url=%2F_next%2Fstatic%2Fmedia%2F4.0p3kmo7.-wstk.jpg&w=1920&q=75"
+              alt="Base Logo"
+              referrerPolicy="no-referrer"
+              className="w-8 h-8 rounded-full border border-[#0200FA]/10 dark:border-white/10 shadow-sm transition-transform duration-300 group-hover:rotate-12 flex-shrink-0 object-cover"
+            />
             
             <div className="flex flex-col text-left">
               <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
@@ -609,6 +631,12 @@ export default function App() {
             />
           </div>
         )}
+
+        <FooterModals
+          activeModal={activeModal}
+          onClose={() => setActiveModal('none')}
+          lang={lang}
+        />
       </AnimatePresence>
 
       {/* MAIN SCREEN ROUTER WITH ANIMATIONS */}
@@ -834,12 +862,12 @@ export default function App() {
       </main>
 
       {/* FOOTER & LIVE BLOCK UPDATES TICKER */}
-      <footer className="border-t border-deep-navy/10 py-4 mt-auto bg-cloud-white/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          
-          {/* News Ticker Panel */}
-          <div className="w-full md:max-w-2xl border border-deep-navy/10 rounded-xl px-3.5 py-2 overflow-hidden flex items-center gap-3 bg-white/60">
-            <span className="bg-warm-red/10 text-warm-red border border-warm-red/20 text-[9px] font-mono font-bold px-2 py-0.5 rounded flex-shrink-0">
+      <footer className="bg-white dark:bg-[#0200FA] border-t border-[#0200FA]/10 dark:border-white/10 pt-16 pb-8 px-4 sm:px-6 md:px-8 font-sans relative overflow-hidden transition-colors duration-300">
+        
+        {/* Top dynamic news broadcast ticker bar */}
+        <div className="max-w-6xl mx-auto mb-12 border border-[#0200FA]/15 dark:border-white/5 rounded-2xl px-4 py-2.5 bg-white/60 dark:bg-slate-900/30 backdrop-blur-md flex items-center justify-between gap-3 shadow-inner">
+          <div className="flex items-center gap-3 overflow-hidden flex-grow">
+            <span className="bg-[#0200FA]/10 text-[#0200FA] dark:bg-white/10 dark:text-white border border-[#0200FA]/20 dark:border-white/20 text-[9px] font-mono font-bold px-2.5 py-0.5 rounded flex-shrink-0 select-none">
               LIVE BROADCAST
             </span>
             
@@ -851,27 +879,62 @@ export default function App() {
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -12, opacity: 0 }}
                   transition={{ duration: 0.4 }}
-                  className="text-xs font-mono absolute inset-x-0 truncate text-deep-navy/70"
+                  className="text-xs font-mono text-[#0200FA]/80 dark:text-white/80 absolute inset-x-0 truncate text-left"
                 >
                   {translations[lang].news_ticker[tickerIndex]}
                 </motion.p>
               </AnimatePresence>
             </div>
           </div>
+          
+          <div className="hidden sm:flex items-center gap-1.5 text-[9px] font-mono text-[#0200FA]/50 dark:text-white/50 uppercase tracking-widest pl-3 border-l border-[#0200FA]/10 dark:border-white/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0200FA] dark:bg-white animate-pulse" />
+            <span>B20 MAZE ENGINE ACTIVE</span>
+          </div>
+        </div>
 
-          {/* Copyright details & contract address */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 text-[10px] font-mono text-deep-navy/60 uppercase tracking-wider">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-warm-red shadow-[0_0_6px_rgba(200,60,42,0.4)]"></span>
-              <span className="text-deep-navy/70">B20 MAZE GAME</span>
+        {/* Main Columns Content */}
+        <div className="max-w-6xl mx-auto text-left relative z-10">
+          
+          {/* Main Section: Heading, Description, Credit */}
+          <div className="max-w-xl flex flex-col items-start">
+            {/* Big Heading */}
+            <h2 className="font-sans font-extrabold text-3xl md:text-4xl text-[#0200FA] dark:text-white tracking-tight leading-tight mt-6 mb-4">
+              Your smart second Dock
+            </h2>
+
+            {/* Description */}
+            <p className="text-[#0200FA]/70 dark:text-white/70 text-sm md:text-base leading-relaxed mb-6">
+              Cooldock brings music, todos, events, weather, search, stats, quick actions, and more useful widgets into one beautiful live dock beside your original Mac Dock.
+            </p>
+
+            {/* Copyright details */}
+            <div className="text-[#0200FA]/60 dark:text-white/60 text-xs font-sans mb-4">
+              © 2026 sividelia6 - All rights reserved
             </div>
-            <span className="hidden sm:inline text-deep-navy/30">•</span>
-            <span className="text-deep-navy/70">Build By Sividelia_okuni6</span>
-            <span className="hidden sm:inline text-deep-navy/30">•</span>
-            <span className="hover:text-cerulean-sky cursor-pointer transition-colors text-deep-navy/70">Contract: 0xBASE...0001</span>
+
+            {/* Credit lines built by sividelia_okuni */}
+            <div className="flex items-center gap-2.5 text-sm text-[#0200FA] dark:text-white">
+              <span>Built with</span>
+              <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />
+              <span>by</span>
+              <span className="font-semibold text-[#0200FA] dark:text-white">sividelia_okuni</span>
+            </div>
           </div>
 
         </div>
+
+        {/* Beautiful scrolling green hills container at the very bottom */}
+        <div className="max-w-6xl mx-auto relative w-full h-[280px] sm:h-[400px] md:h-[450px] overflow-hidden rounded-3xl mt-16 shadow-2xl border border-gray-150/80 dark:border-white/5 select-none">
+          {/* Rolling green hills background image replaced with Base brand image */}
+          <img 
+            src="https://brand.base.org/_next/image?url=%2F_next%2Fstatic%2Fmedia%2F4.0p3kmo7.-wstk.jpg&w=1920&q=75" 
+            alt="Base Brand Footer Background" 
+            className="absolute inset-0 w-full h-full object-cover transform scale-105 transition-transform duration-700 hover:scale-100"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
       </footer>
 
     </div>
