@@ -33,7 +33,7 @@
 /* Cora-specific stylistic elements */
 .cora-canvas {
   background-color: #FFFFFF;
-  background-image: url("https://s3-figma-hubfile-images-production-cdn-cgi.figma.com/cdn-cgi/image/format=auto,quality=85,width=1600/hub/file/carousel/img/b1eb42d4e2c456b49bf53a8577cf7cd54ff0e308/a9457d052f772bff02b055f789a76311632ad5cb");
+  background-image: url("./assets/images/hills_footer_bg_1784096446331.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -120,7 +120,7 @@
 /* Dark Mode Overrides for strict #0200FA and #FFFFFF dual-tone */
 .dark .cora-canvas {
   background-color: #0200FA;
-  background-image: linear-gradient(rgba(2, 0, 250, 0.85), rgba(2, 0, 250, 0.85)), url("https://s3-figma-hubfile-images-production-cdn-cgi.figma.com/cdn-cgi/image/format=auto,quality=85,width=1600/hub/file/carousel/img/b1eb42d4e2c456b49bf53a8577cf7cd54ff0e308/a9457d052f772bff02b055f789a76311632ad5cb");
+  background-image: linear-gradient(rgba(2, 0, 250, 0.85), rgba(2, 0, 250, 0.85)), url("./assets/images/hills_footer_bg_1784096446331.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

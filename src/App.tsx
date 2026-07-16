@@ -65,10 +65,6 @@ export default function App() {
     return Number(localStorage.getItem('base_maze_special_tokens') || '1');
   });
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('base_maze_dark_mode') === 'true';
-  });
-
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
@@ -80,13 +76,9 @@ export default function App() {
   }, [specialTokens]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('base_maze_dark_mode', String(isDarkMode));
-  }, [isDarkMode]);
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('base_maze_dark_mode');
+  }, []);
 
   // Sync music state with SoundEngine
   useEffect(() => {
@@ -155,13 +147,21 @@ export default function App() {
             onClick={() => { sound.playMove(); setScreen('home'); }}
             className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            {/* Custom Logo Image */}
-            <img 
-              src="https://brand.base.org/_next/image?url=%2F_next%2Fstatic%2Fmedia%2F4.0p3kmo7.-wstk.jpg&w=1920&q=75"
-              alt="Base Logo"
-              referrerPolicy="no-referrer"
-              className="w-8 h-8 rounded-full border border-[#0200FA]/10 dark:border-white/10 shadow-sm transition-transform duration-300 group-hover:rotate-12 flex-shrink-0 object-cover"
-            />
+            {/* Custom Base Wordmark SVG Logo */}
+            <svg 
+              viewBox="0 0 440 150" 
+              className="h-5 w-auto text-[#0200FA] dark:text-white transition-all duration-300 group-hover:scale-105 flex-shrink-0"
+              fill="currentColor"
+            >
+              {/* b-shape */}
+              <path d="M 12 0 C 5.37 0 0 5.37 0 12 L 0 134 C 0 142.84 7.16 150 16 150 L 84 150 C 92.84 150 100 142.84 100 134 L 100 66 C 100 57.16 92.84 50 84 50 L 24 50 L 24 12 C 24 5.37 18.63 0 12 0 Z" />
+              {/* second square */}
+              <rect x="112" y="50" width="100" height="100" rx="16" />
+              {/* third square */}
+              <rect x="224" y="50" width="100" height="100" rx="16" />
+              {/* fourth square */}
+              <rect x="336" y="50" width="100" height="100" rx="16" />
+            </svg>
             
             <div className="flex flex-col text-left">
               <span className="font-serif font-light text-sm tracking-wide leading-tight text-deep-navy dark:text-slate-200">
@@ -321,26 +321,7 @@ export default function App() {
                   <span>{isMusicOn ? translations[lang].header.music_off : translations[lang].header.music_on}</span>
                 </button>
 
-                {/* Dark Mode option */}
-                <button
-                  onClick={() => {
-                    sound.playMove();
-                    setIsDarkMode(!isDarkMode);
-                  }}
-                  className="w-full bg-deep-navy/5 dark:bg-slate-800/40 hover:bg-deep-navy/[0.08] dark:hover:bg-slate-750 text-deep-navy/80 hover:text-deep-navy dark:text-slate-200 rounded-[20px] py-4 px-5 flex items-center gap-3.5 font-sans font-medium text-base transition-all duration-200 cursor-pointer text-left"
-                >
-                  {isDarkMode ? (
-                    <>
-                      <Sun className="w-5 h-5 text-amber-500 animate-pulse" />
-                      <span>{translations[lang].header.theme_light}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="w-5 h-5 text-[#5e43f3]" />
-                      <span>{translations[lang].header.theme_dark}</span>
-                    </>
-                  )}
-                </button>
+
               </div>
 
               {/* Bottom Start Journey Action Button */}
